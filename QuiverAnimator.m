@@ -54,6 +54,7 @@ classdef QuiverAnimator < Animator
         step=.75;
         vectorSize = 1;
         normVectors = 1;
+        densityThresh = 3;
         cmap = @magma;
         embedX
         embedY
@@ -101,7 +102,7 @@ classdef QuiverAnimator < Animator
             X = smoothdata(obj.embed(:,1),'gaussian',5);
             Y = smoothdata(obj.embed(:,2),'gaussian',5);
             [gX, gY, gdX, gdY] = ...
-                quiverVars(X,Y,'step',obj.step,'densityThresh',3,'ubound',100,'lbound',0);
+                quiverVars(X,Y,'step',obj.step,'densityThresh',obj.densityThresh,'ubound',100,'lbound',0);
             obj.quiver = quiverc(gX,gY,gdX,gdY,'NormVectors',obj.normVectors,'VectorSize',obj.vectorSize,'cmap',obj.cmap);
             xlim(obj.Axes,[min(obj.embed(:,1)) max(obj.embed(:,1))])
             ylim(obj.Axes,[min(obj.embed(:,2)) max(obj.embed(:,2))])

@@ -30,9 +30,7 @@ classdef VideoKeypointAnimator < VideoAnimator
             obj.keypointsScatter = ...
                 scatter(gca, obj.keypoints(1,1,:),...
                         obj.keypoints(1,2,:),'g');
-        end
-        
-        
+        end  
     end
     
     methods (Access = protected)
@@ -40,7 +38,7 @@ classdef VideoKeypointAnimator < VideoAnimator
             update@VideoAnimator()
             set(obj.img,'CData',obj.V(:,:,obj.frame));
             if ~isempty(obj.markers)
-               set(obj.scatterFig,'XData',obj.markers(:,1,obj.frame),'YData',obj.markers(:,2,obj.frame)) 
+               set(obj.scatterFig,'XData',obj.keypoints(:,1,obj.frame),'YData',obj.keypoints(:,2,obj.frame)) 
             end
         end
     end

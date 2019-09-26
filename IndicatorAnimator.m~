@@ -42,13 +42,13 @@ classdef IndicatorAnimator < Animator
             obj.frameInds = 1:obj.nFrames;
             set(obj.Axes,'Units','normalized',...
                 'Position',obj.AxesPosition);
-            axes(obj.Axes)
+            
             if obj.logic(1)                
                 obj.Patch = patch([0 1 1 0], [0 0 1 1],obj.Color,'FaceAlpha',.5,'LineStyle','none');
             else 
                 obj.Patch = patch([0 1 1 0], [0 0 1 1],obj.Color,'FaceAlpha',0,'LineStyle','none');
             end
-            axis off;
+            set(gc
         end
         
         function restrict(obj, newFrames)

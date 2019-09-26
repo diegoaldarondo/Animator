@@ -69,6 +69,10 @@ classdef (Abstract) Animator < Chart
             delete(obj.Axes);
         end % delete obj
         
+        function axes = getAxes( obj )
+            axes = obj.Axes;
+        end
+        
         function frame = get.frame( obj )
             frame = obj.frame;
         end % get.frame
@@ -193,18 +197,27 @@ classdef (Abstract) Animator < Chart
     
     methods (Static)      
         
+        function linkAll(h)
+            for i = 1:numel(h)
+                h{i}.links = h;
+            end
+            set(h{1}.Parent,'WindowKeyPressFcn',...
+                @(src,event) Animator.runAll(h,src,event))
+        end
+        
         function runAll(h,src,event)
             %runAll - iterate through the keyPressCallback function of all
-            %charts within a cell array.
+            %Animators within a cell array.
             %
             %   Syntax: runAll(h,src,event);
             %
             %   Notes: It is useful to assign this function as the
             %          WindowKeyPressFcn of a figure with multiple axes
             %          that listen for key presses.
-
             for i = 1:numel(h)
-                keyPressCallback(h{i},src,event)
+                if isa(h{i},'Animator')
+                    keyPressCallback(h{i},src,event)
+                end
             end
         end
     end

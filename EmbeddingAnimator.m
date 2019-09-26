@@ -71,7 +71,8 @@ classdef EmbeddingAnimator < Animator
             if isempty(obj.nFrames)
                 obj.nFrames = size(obj.embed,1);
             end
-            
+            set(obj.Axes,'Units','normalized',...
+                'Position',obj.AxesPosition);
             % Get a vector, frameInds, of length nFrames where frameInds(i)
             % is the value in embedFrames closest to i.
             [obj.frameInds, I] = deal(zeros(obj.nFrames,1));
@@ -87,7 +88,6 @@ classdef EmbeddingAnimator < Animator
                 end
                 I(i) = count;
             end
-            
             % Create the backgound scatter
             c = lines(2);
             obj.scatterFig = scatter(obj.Axes,obj.embed(:,1),...
@@ -103,8 +103,6 @@ classdef EmbeddingAnimator < Animator
             % Plot the current point
             obj.currentPoint = scatter(obj.Axes,obj.embedX(1),...
                 obj.embedY(1), 500,c(2,:),'.');
-            set(obj.Axes,'Units','normalized',...
-                'Position',obj.AxesPosition);
         end
         
         function restrict(obj, newFrames)

@@ -1,10 +1,9 @@
-classdef MarkerAnimator < Animator
-    %MarkerAnimator - Make a movie of markers tracked over time. Concrete
+classdef Keypoint3DAnimator < Animator
+    %Keypoint3DAnimator - Make a movie of markers tracked over time. Concrete
     %subclass of Animator.
     %
-    %   MarkerAnimator Properties:
+    %   Keypoint3DAnimator Properties:
     %   lim - limits of viewing window
-    %   camPosition - cameraPosition of viewing window
     %   AxesPosition - position of axes within figure
     %   frame - current frame number
     %   frameRate - current frame rate
@@ -16,8 +15,8 @@ classdef MarkerAnimator < Animator
     %   ScatterMarkers - handle to scatter plot
     %   PlotSegments - handles to linesegments
     %
-    %   MarkerAnimator Methods:
-    %   MarkerAnimator - constructor
+    %   Keypoint3DAnimator Methods:
+    %   Keypoint3DAnimator - constructor
     %   restrict - restrict the animation to a subset of the frames
     %   keyPressCallback - handle UI
     properties (Access = private)
@@ -27,7 +26,7 @@ classdef MarkerAnimator < Animator
         markersZ
         color
         joints
-        instructions = ['MarkerAnimator Guide:\n'...
+        instructions = ['Keypoint3DAnimator Guide:\n'...
             'rightarrow: next frame\n' ...
             'leftarrow: previous frame\n' ...
             'uparrow: increase frame rate by 10\n' ...
@@ -36,15 +35,16 @@ classdef MarkerAnimator < Animator
             'control: set frame rate to 50\n' ...
             'shift: set frame rate to 250\n' ...
             'h: help guide\n'];
-        statusMsg = 'MarkerAnimator:\nFrame: %d\nframeRate: %d\n'
+        statusMsg = 'Keypoint3DAnimator:\nFrame: %d\nframeRate: %d\n'
     end
     
     properties (Access = public)
-        lim = [-130 130]
+        xlim
+        ylim
+        zlim
         camPosition = [1.5901e+03 -1.7910e+03 1.0068e+03];
         MarkerSize = 20;
         LineWidth = 3;
-        movieTitle
         markers
         skeleton
         AxesPosition = [0 0 1 1];
@@ -53,41 +53,68 @@ classdef MarkerAnimator < Animator
     end
     
     methods
-        function obj = MarkerAnimator(varargin)
-            %MarkerAnimator - constructor for MarkerAnimator class.
-            %MarkerAnimator is a concrete subclass of Animator.
+        function obj = Keypoint3DAnimator(markers, skeleton, varargin)
+            %Keypoint3DAnimator - constructor for Keypoint3DAnimator class.
+            %Keypoint3DAnimator is a concrete subclass of Animator.
             %
-            %   Syntax: MarkerAnimator(varargin);
+            %Inputs:
+            %   markers: Time x nDimension x nMarkers matrix of keypoints.
+            %   skeleton: Structure with two fields:
+            %       skeleton.color: nSegments x 3 matrix of RGB values
+            %       skeleton.joints_idx: nSegments x 2 matrix of integers
+            %           denoting directed edges between markers. 
+            %   Syntax: Keypoint3DAnimator(markers, skeleton, varargin);
+            
+            % Check inputs
+            validateattributes(markers,{'numeric'},{'3d'})
+            validateattributes(skeleton,{'struct'},{})
+            obj.markers = markers;
+            obj.skeleton = skeleton;
+            obj.color = obj.skeleton.color;
+            obj.joints = obj.skeleton.joints_idx;
+            validateattributes(obj.joints,{'numeric'},{'positive'})
+            validateattributes(obj.color,{'numeric'},{'nonnegative'})
+            if max(max(obj.joints)) > size(obj.markers,3)
+                error('Invalid joints_idx: Idx exceeds number of markers');
+            end
+            if size(obj.color, 1) ~= size(obj.joints,1)
+                error('Number of colors and number of segments do not match');
+            end
             
             % User defined inputs
             if ~isempty(varargin)
                 set(obj,varargin{:});
             end
-            set(obj.Parent,'color','k')
+            if isempty(obj.xlim)
+                obj.xlim = [min(min(obj.markers(:,1,:))) max(max(obj.markers(:,1,:)))];
+            end
+            if isempty(obj.ylim)
+                obj.ylim = [min(min(obj.markers(:,2,:))) max(max(obj.markers(:,2,:)))];
+            end
+            if isempty(obj.zlim)
+                obj.zlim = [min(min(obj.markers(:,3,:))) max(max(obj.markers(:,3,:)))];
+            end
+            
             set(obj.Axes,'Units','normalized',...
                 'Position',obj.AxesPosition,...
-                'xlim',obj.lim,'ylim',obj.lim,'zlim',obj.lim,...
-                'color','k','CameraPosition',obj.camPosition);
+                'xlim',obj.xlim,'ylim',obj.ylim,'zlim',obj.zlim);
             
             % Private constructions
             obj.nFrames = size(obj.markers,1);
             obj.frameInds = 1:obj.nFrames;
-            obj.markersX = obj.markers(:,1:3:end);
-            obj.markersY = obj.markers(:,2:3:end);
-            obj.markersZ = obj.markers(:,3:3:end);
-            obj.nMarkers = size(obj.markers,2);
-            obj.color = obj.skeleton.segments.color;
-            obj.joints = cat(1,obj.skeleton.segments.joints_idx{:});
+            obj.markersX = obj.markers(:,1,:);
+            obj.markersY = obj.markers(:,2,:);
+            obj.markersZ = obj.markers(:,3,:);
+            obj.nMarkers = size(obj.markers,3);
             
             % Get color groups
-            c = cell2mat(obj.color);
-            [colors,~,cIds] = unique(c,'rows');
+            [colors,~,cIds] = unique(obj.color,'rows');
             [~, MaxNNodes] = mode(cIds);
             
             % Get the first frames marker positions
-            curX = obj.markersX(obj.frame,:);
-            curY = obj.markersY(obj.frame,:);
-            curZ = obj.markersZ(obj.frame,:);            
+            curX = obj.markersX(obj.frameInds(obj.frame),:);
+            curY = obj.markersY(obj.frameInds(obj.frame),:);
+            curZ = obj.markersZ(obj.frameInds(obj.frame),:);
             curX = curX(obj.joints)';
             curY = curY(obj.joints)';
             curZ = curZ(obj.joints)';
@@ -100,13 +127,11 @@ classdef MarkerAnimator < Animator
             catnanZ = cat(1,curZ,nan(1,size(curZ,2)));
             
             % Put into array for vectorized graphics initialization
-            nanedXVec = nan(MaxNNodes*3,size(colors,1));
-            nanedYVec = nan(MaxNNodes*3,size(colors,1));
-            nanedZVec = nan(MaxNNodes*3,size(colors,1));
-            for i = 1:size(colors,1)
-                nanedXVec(1:numel(catnanX(:,cIds==i)),i) = reshape(catnanX(:,cIds==i),[],1);
-                nanedYVec(1:numel(catnanY(:,cIds==i)),i) = reshape(catnanY(:,cIds==i),[],1);
-                nanedZVec(1:numel(catnanZ(:,cIds==i)),i) = reshape(catnanZ(:,cIds==i),[],1);
+            [nanedXVec, nanedYVec, nanedZVec] = deal(nan(MaxNNodes*2,size(colors,1)));
+            for nColor = 1:size(colors,1)
+                nanedXVec(1:numel(catnanX(:,cIds==nColor)),nColor) = reshape(catnanX(:,cIds==nColor),[],1);
+                nanedYVec(1:numel(catnanY(:,cIds==nColor)),nColor) = reshape(catnanY(:,cIds==nColor),[],1);
+                nanedZVec(1:numel(catnanZ(:,cIds==nColor)),nColor) = reshape(catnanZ(:,cIds==nColor),[],1);
             end
             
             % Build line objects and set final properties
@@ -119,18 +144,15 @@ classdef MarkerAnimator < Animator
                 'MarkerSize',obj.MarkerSize,...
                 'LineWidth',obj.LineWidth);
             set(obj.PlotSegments, {'color'}, mat2cell(colors,ones(size(colors,1),1)));
-            title(obj.Axes, obj.movieTitle,'Color','w',...
-                'Position',[0,0,obj.lim(2)]);
         end
         
         function restrict(obj, newFrames)
             %restrict - restricts animation to a subset of frames
-            obj.markersX = obj.markers(newFrames,1:3:end);
-            obj.markersY = obj.markers(newFrames,2:3:end);
-            obj.markersZ = obj.markers(newFrames,3:3:end);
+            obj.markersX = obj.markers(newFrames,1,:);
+            obj.markersY = obj.markers(newFrames,2,:);
+            obj.markersZ = obj.markers(newFrames,3,:);
             restrict@Animator(obj, newFrames);
         end
-        
         
         function keyPressCallback(obj,source,eventdata)
             % keyPressCallback - Handle UI
@@ -143,29 +165,33 @@ classdef MarkerAnimator < Animator
             keyPressed = eventdata.Key;
             switch keyPressed
                 case 'h'
-                    message = obj(1).instructions;
+                    message = obj.instructions;
                     fprintf(message);
                 case 's'
-                    fprintf(obj(1).statusMsg,...
-                        obj(1).frameInds(obj(1).frame),obj(1).frameRate);
-                    %                     for i = 1:numel(obj)
-                    %                         fprintf(obj(i).statusMsg,...
-                    %                             obj(i).frameInds(obj(i).frame),obj(i).frameRate);
-                    %                     end
+                    fprintf(obj.statusMsg,...
+                        obj.frameInds(obj.frame),obj.frameRate);
+                case 'r'
+                    reset(obj);
             end
         end
     end
     
+    methods (Access = private)
+        function reset(obj)
+            restrict(obj, 1:size(obj.markers,1))
+        end
+    end
+    
+    
     methods (Access = protected)
         function update(obj)
             % Find color groups
-            c = cell2mat(obj.color);
-            [colors,~,cIds] = unique(c,'rows');
+            [colors,~,cIds] = unique(obj.color,'rows');
             
             % Get the joints for the current frame
-            curX = obj.markersX(obj.frame,:);
-            curY = obj.markersY(obj.frame,:);
-            curZ = obj.markersZ(obj.frame,:);
+            curX = obj.markersX(obj.frameInds(obj.frame),:);
+            curY = obj.markersY(obj.frameInds(obj.frame),:);
+            curZ = obj.markersZ(obj.frameInds(obj.frame),:);
             curX = curX(obj.joints)';
             curY = curY(obj.joints)';
             curZ = curZ(obj.joints)';
@@ -178,9 +204,7 @@ classdef MarkerAnimator < Animator
             catnanZ = cat(1,curZ,nan(1,size(curZ,2)));
             
             % Put into cell for vectorized graphics update
-            nanedXVec = cell(size(colors,1),1);
-            nanedYVec = cell(size(colors,1),1);
-            nanedZVec = cell(size(colors,1),1);
+            [nanedXVec,nanedYVec,nanedZVec] = deal(cell(size(colors,1),1));
             for i = 1:size(colors,1)
                 nanedXVec{i} = reshape(catnanX(:,cIds==i),[],1);
                 nanedYVec{i} = reshape(catnanY(:,cIds==i),[],1);
@@ -189,7 +213,7 @@ classdef MarkerAnimator < Animator
             
             % Update the values
             valueArray = cat(2, nanedXVec, nanedYVec, nanedZVec);
-            nameArray = {'XData','YData','ZData'};
+            nameArray = {'XData', 'YData', 'ZData'};
             segments = obj.PlotSegments;
             set(segments,nameArray,valueArray)
         end
