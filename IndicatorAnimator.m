@@ -7,7 +7,6 @@ classdef IndicatorAnimator < Animator
     %IndicatorAnimator Properties:
     %   logic - logical vector of when the indicator should be on. 
     %   Patch - handle to indicator Patch. 
-    %   AxesPositon - Position of the indicatorAnimator withing the figure.
     %   Color - Color of the indicator
     %
     %IndicatorAnimator Methods:
@@ -21,7 +20,6 @@ classdef IndicatorAnimator < Animator
     properties (Access = public)
         logic
         Patch
-        AxesPosition = [0 0 1 1];
         Color = 'r';
     end
     
@@ -40,8 +38,6 @@ classdef IndicatorAnimator < Animator
                 obj.nFrames = size(obj.logic, 1);
             end
             obj.frameInds = 1:obj.nFrames;
-            set(obj.Axes,'Units','normalized',...
-                'Position',obj.AxesPosition);
             axes(obj.Axes)
             if obj.logic(1)                
                 obj.Patch = patch([0 1 1 0], [0 0 1 1],obj.Color,'FaceAlpha',.5,'LineStyle','none');

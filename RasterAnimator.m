@@ -23,7 +23,6 @@ classdef RasterAnimator < Animator
         animal
         nMarkers
         centerLine
-        AxesPosition = [0 0 1 1];
     end
     
     methods
@@ -46,8 +45,6 @@ classdef RasterAnimator < Animator
             hold(obj.Axes,'off')
             obj.img = imagesc(obj.Axes, obj.raster(:,obj.frame)');
             colormap('jet')
-            set(obj.Axes,'Units','normalized',...
-                'Position',obj.AxesPosition);
             lims = [min(obj.frame+obj.viewingWindow) max(obj.frame+obj.viewingWindow)];
             xlim(obj.Axes,lims)
             hold(obj.Axes,'on');
@@ -71,7 +68,6 @@ classdef RasterAnimator < Animator
                         obj.frameInds(obj.frame),obj.frameRate);
                 case 'r'
                     reset(obj);
-                    pause(1)
             end
             update(obj);
         end
@@ -80,7 +76,7 @@ classdef RasterAnimator < Animator
     methods (Access = private)
         function reset(obj)
             % Set embedMovie and associated MarkerMovies to the orig. size
-            restrict(obj,true(size(obj.raster,1),1));
+            restrict(obj,1:size(obj.raster,1));
         end
     end
     

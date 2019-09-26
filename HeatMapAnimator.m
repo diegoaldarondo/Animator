@@ -12,7 +12,6 @@ classdef HeatMapAnimator < Animator
     %   stds - stds of the dimensions of X
     %   img - Handle to imagesc of X
     %   centerLine - Handle to line denoting current frame in heatmap
-    %   AxesPosition - Position of the heatmap within the current figure. 
     %   zIm - Logical denoting whether the heatmap is currently zscored by
     %         dimensions.
     %         Default behavior is to automatically zscore dimensions. 
@@ -50,7 +49,6 @@ classdef HeatMapAnimator < Animator
         stds
         img
         centerLine
-        AxesPosition = [0 0 1 1];
         zIm=false;
         origCLims
         seqSortWin = -5:5
@@ -82,8 +80,6 @@ classdef HeatMapAnimator < Animator
             obj.origCLims = prctile(obj.X(:), [2.5 97.5]);
             obj.means = nanmean(obj.X);
             obj.stds = nanstd(obj.X);
-            set(obj.Axes,'Units','normalized',...
-                'Position',obj.AxesPosition);
             obj.zImage()
             obj.c = colorbar(obj.Axes);
             lims = [min(obj.frame+obj.viewingWindow) max(obj.frame+obj.viewingWindow)];

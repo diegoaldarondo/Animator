@@ -28,6 +28,7 @@ classdef (Abstract) Animator < Chart
     %            Animators in links
     %            It is useful to assign this function as the
     %            WindowKeyPressFcn of a figure with multiple Animators.
+    %   linkAll - Link all Animators in a cell array together. 
     properties (Access = protected)
         nFrames
     end
@@ -63,6 +64,7 @@ classdef (Abstract) Animator < Chart
             % Set up the axes
             hold(obj.Axes,'on');
             obj.Axes.DeleteFcn = @obj.onAxesDeleted;
+            set(obj.Axes,'Units','normalized');
         end
         
         function delete(obj)

@@ -4,7 +4,6 @@ classdef Keypoint3DAnimator < Animator
     %
     %   Keypoint3DAnimator Properties:
     %   lim - limits of viewing window
-    %   AxesPosition - position of axes within figure
     %   frame - current frame number
     %   frameRate - current frame rate
     %   MarkerSize - size of markers
@@ -47,7 +46,6 @@ classdef Keypoint3DAnimator < Animator
         LineWidth = 3;
         markers
         skeleton
-        AxesPosition = [0 0 1 1];
         ScatterMarkers
         PlotSegments
     end
@@ -85,6 +83,9 @@ classdef Keypoint3DAnimator < Animator
             if ~isempty(varargin)
                 set(obj,varargin{:});
             end
+            
+            % This can be improved through an Animator check for obj.Axes
+            % modifications in the Animator constructor.
             if isempty(obj.xlim)
                 obj.xlim = [min(min(obj.markers(:,1,:))) max(max(obj.markers(:,1,:)))];
             end
@@ -94,10 +95,7 @@ classdef Keypoint3DAnimator < Animator
             if isempty(obj.zlim)
                 obj.zlim = [min(min(obj.markers(:,3,:))) max(max(obj.markers(:,3,:)))];
             end
-            
-            set(obj.Axes,'Units','normalized',...
-                'Position',obj.AxesPosition,...
-                'xlim',obj.xlim,'ylim',obj.ylim,'zlim',obj.zlim);
+            set(obj.Axes,'xlim',obj.xlim,'ylim',obj.ylim,'zlim',obj.zlim);
             
             % Private constructions
             obj.nFrames = size(obj.markers,1);

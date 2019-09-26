@@ -6,8 +6,6 @@ classdef VideoAnimator < Animator
     %
     %VideoAnimator Properties:
     %   V - 4D (i,j,channel,N) movie to animate.
-    %   animal - handle to the calling Animal object to sync with
-    %             MarkerMovies.
     %   img - Handle to the imshow object
     %   
     %
@@ -35,14 +33,6 @@ classdef VideoAnimator < Animator
     properties (Access = public)
         V
         img
-        color
-        joints
-        markers
-        scatterFig
-        PlotSegments   
-        skeleton
-        nMarkers
-        AxesPosition = [0 0 1 1];
     end
     
     methods
@@ -63,12 +53,9 @@ classdef VideoAnimator < Animator
             if isempty(obj.nFrames)
                 obj.nFrames = size(obj.V,4);
             end
-            obj.frameInds = 1:obj.nFrames;
-            
+            obj.frameInds = 1:obj.nFrames;   
             hold(obj.Axes,'off')
             obj.img = imshow(obj.V(:,:,:, obj.frame),'Parent',obj.Axes);
-            set(obj.Axes,'Units','normalized',...
-                'Position',obj.AxesPosition);
         end
         
         function restrict(obj, newFrames)
@@ -94,7 +81,6 @@ classdef VideoAnimator < Animator
     
     methods (Access = private)
         function reset(obj)
-            % Set embedMovie and associated MarkerMovies to the orig. size
             restrict(obj,1:size(obj.V,4));
         end
     end

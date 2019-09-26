@@ -1,22 +1,18 @@
-classdef EmbeddingAnimator < Animator
-    %EmbeddingAnimator - Animator for scatter plots.
+classdef ScatterAnimator < Animator
+    %ScatterAnimator - Animator for scatter plots.
     %
-    %Syntax: EmbeddingAnimator('embed',embed)
+    %Syntax: ScatterAnimator('embed',embed)
     %
-    %EmbeddingAnimator Properties:
-    %    embed - embedded points (replicated so size matches nFrames)
-    %    embedFrames - corresponding movie Frames, in case there is a
-    %                  mismatch in frames between other Animators.
+    %ScatterAnimator Properties:
+    %    data - points (ntimepoints x 2);
     %    scatterFig - handle to the background scatter plot
     %    currentPoint - handle to the current point
-    %    animal - handle to the calling Animal object to sync with
-    %             MarkerMovies. Currently deprecated.
     %    poly - polygon defined in user input. 
-    %    AxesPosition - position within current figure
+    %    
     %    
     %
-    % EmbeddingAnimator Methods:
-    % EmbeddingAnimator - constructor
+    % ScatterAnimator Methods:
+    % ScatterAnimator - constructor
     % restrict - restrict animation to subset of frames
     % keyPressCalback - handle UI
     % inputPoly - UI polygon selection of points in scatterplot to restrict
@@ -27,7 +23,7 @@ classdef EmbeddingAnimator < Animator
     %              At any time type 'x' or 'y' to sort frames in the x or y
     %              dimension. This also works for restricted frames. 
     properties (Access = private)
-        instructions = ['EmbeddingAnimator Guide:\n' ...
+        instructions = ['ScatterAnimator Guide:\n' ...
             'rightarrow: next frame\n' ...
             'leftarrow: previous frame\n' ...
             'uparrow: increase frame rate by 10\n' ...
@@ -41,23 +37,24 @@ classdef EmbeddingAnimator < Animator
             's: print current matched frame and rate\n'];
         statusMsg = 'EmbedMovie:\nFrame: %d\nframeRate: %d\n';
         pointsInPoly
-        embedX
-        embedY
+        dataX
+        dataY
     end
     
     properties (Access = public)
         behaviorWindow = 0:0;
-        embed
+        data
         poly
-        embedFrames
         scatterFig
         currentPoint
-        animal
-        AxesPosition = [0 0 1 1];
     end
     
     methods
-        function obj = EmbeddingAnimator(varargin)
+        function obj = ScatterAnimator(data, varargin)
+            
+            if ~isempty(data)
+                obj.data = data;
+            end
             
             % User defined inputs
             if ~isempty(varargin)
@@ -65,53 +62,26 @@ classdef EmbeddingAnimator < Animator
             end
             
             % Handle defaults
-            if isempty(obj.embedFrames)
-                obj.embedFrames = (1:size(obj.embed,1))';
-            end
             if isempty(obj.nFrames)
-                obj.nFrames = size(obj.embed,1);
+                obj.nFrames = size(obj.data,1);
             end
-            set(obj.Axes,'Units','normalized',...
-                'Position',obj.AxesPosition);
-            % Get a vector, frameInds, of length nFrames where frameInds(i)
-            % is the value in embedFrames closest to i.
-            [obj.frameInds, I] = deal(zeros(obj.nFrames,1));
-            count = 1;
-            for i = 1:numel(obj.frameInds)
-                if i <= obj.embedFrames(count)
-                    obj.frameInds(i) = obj.embedFrames(count);
-                else
-                    if count < numel(obj.embedFrames)
-                        count = count + 1;
-                    end
-                    obj.frameInds(i) = obj.embedFrames(count);
-                end
-                I(i) = count;
-            end
+            obj.frameInds = 1:obj.nFrames;
+            
             % Create the backgound scatter
             c = lines(2);
-            obj.scatterFig = scatter(obj.Axes,obj.embed(:,1),...
-                obj.embed(:,2),2,c(1,:),'.');
+            obj.scatterFig = scatter(obj.Axes,obj.data(:,1),...
+                obj.data(:,2),2,c(1,:),'.');
             
             % Expand to fit the number of actual frames. This makes
             % indexing a whole lot easier later.
-            obj.embedX = obj.embed(I,1);
-            obj.embedY = obj.embed(I,2);
-            obj.embed = obj.embed(I,:);
-            obj.embedFrames = obj.embedFrames(I);
+            obj.dataX = obj.data(:,1);
+            obj.dataY = obj.data(:,2);
             
             % Plot the current point
-            obj.currentPoint = scatter(obj.Axes,obj.embedX(1),...
-                obj.embedY(1), 500,c(2,:),'.');
+            obj.currentPoint = scatter(obj.Axes,obj.dataX(1),...
+                obj.dataY(1), 500,c(2,:),'.');
         end
-        
-        function restrict(obj, newFrames)
-            obj.embedX = obj.embed(newFrames,1);
-            obj.embedY = obj.embed(newFrames,2);
-            restrict@Animator(obj, newFrames);
-            obj.frameInds = obj.embedFrames(newFrames);
-        end
-        
+
         function keyPressCallback(obj,source,eventdata)
             % determine the key that was pressed
             keyPressCallback@Animator(obj,source,eventdata);
@@ -124,7 +94,6 @@ classdef EmbeddingAnimator < Animator
                         obj.frameInds(obj.frame),obj.frameRate);
                     fprintf('counter: %d\n', obj.frame)
                 case 'i'
-                    disp('callback')
                     inputPoly(obj);
                 case 'y'
                     if obj.scope == obj.id
@@ -136,14 +105,6 @@ classdef EmbeddingAnimator < Animator
                     end
                 case 'r'
                     reset(obj);
-                case 'b'
-                    % Likely deprecated
-                    if obj.scope == obj.id
-                        obj.animal.bradyMovie(repmat({'imputed'},16,1),[4 4]);
-                        % obj.animal.bradyMovie(repmat({'imputed'},16,1),[4 4],true);
-                        % obj.animal.bradyMovie(repmat({'imputed'},9,1),[3 3]);
-                    end
-                    pause(1)
             end
             update(obj);
         end
@@ -158,16 +119,16 @@ classdef EmbeddingAnimator < Animator
                 end
                 xv = obj.poly.Position(:,1);
                 yv = obj.poly.Position(:,2);
-                obj.pointsInPoly = inpolygon(obj.embed(:,1),...
-                    obj.embed(:,2),xv,yv);
+                obj.pointsInPoly = inpolygon(obj.data(:,1),...
+                    obj.data(:,2),xv,yv);
                 
                 % Find a window surrounding the frames within the polygon.
-                framesInPoly = obj.embedFrames(obj.pointsInPoly);
+                framesInPoly = obj.frameInds(obj.pointsInPoly);
                 framesInPoly = unique(framesInPoly);
                 framesInPoly = framesInPoly + obj.behaviorWindow;
                 framesInPoly = unique(sort(framesInPoly(:)));
                 framesInPoly = framesInPoly((framesInPoly > 0) &...
-                    (framesInPoly <= numel(obj.embedFrames)));
+                    (framesInPoly <= numel(obj.frameInds)));
                 
                 if ~isempty(obj.links)
                     for i = 1:numel(obj.links)
@@ -189,25 +150,15 @@ classdef EmbeddingAnimator < Animator
             end
             
             % Set embedMovie and associated MarkerMovies to the orig. size
-            restrict(obj,true(size(obj.embed,1),1));
-            
-            % Interactions with Animal are currently deprecated
-            if ~isempty(obj.animal)
-                for i = 1:numel(obj.animal.h)
-                    if isa(obj.animal.h{i},'MarkerAnimator')
-                        restrict(obj.animal.h{i},...
-                            1:size(obj.animal.h{i}.markers,1))
-                    end
-                end
-            end
+            restrict(obj,1:size(obj.data,1));
         end
         
         
         function orderPoints(obj, dim)
             if dim == 1
-                [~,I] = sort(obj.embedX);
+                [~,I] = sort(obj.dataX(obj.frameInds));
             elseif dim == 2
-                [~,I] = sort(obj.embedY);
+                [~,I] = sort(obj.dataY(obj.frameInds));
             else
                 error('dim must be 1 or 2')
             end         
@@ -225,8 +176,8 @@ classdef EmbeddingAnimator < Animator
     
     methods (Access = protected)
         function update(obj)
-            set(obj.currentPoint,'XData',obj.embedX(obj.frame),...
-                'YData',obj.embedY(obj.frame));
+            set(obj.currentPoint,'XData',obj.dataX(obj.frameInds(obj.frame)),...
+                'YData',obj.dataY(obj.frameInds(obj.frame)));
         end
         
         

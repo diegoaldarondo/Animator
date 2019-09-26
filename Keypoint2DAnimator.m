@@ -4,7 +4,6 @@ classdef Keypoint2DAnimator < Animator
     %
     %   Keypoint2DAnimator Properties:
     %   lim - limits of viewing window
-    %   AxesPosition - position of axes within figure
     %   frame - current frame number
     %   frameRate - current frame rate
     %   MarkerSize - size of markers
@@ -44,7 +43,6 @@ classdef Keypoint2DAnimator < Animator
         LineWidth = 3;
         markers
         skeleton
-        AxesPosition = [0 0 1 1];
         ScatterMarkers
         PlotSegments
     end
@@ -87,11 +85,8 @@ classdef Keypoint2DAnimator < Animator
             end
             if isempty(obj.ylim)
                 obj.ylim = [min(min(obj.markers(:,2,:))) max(max(obj.markers(:,2,:)))];
-            end
-            
-            set(obj.Axes,'Units','normalized',...
-                'Position',obj.AxesPosition,...
-                'xlim',obj.xlim,'ylim',obj.ylim);
+            end 
+            set(obj.Axes,'xlim',obj.xlim,'ylim',obj.ylim);
             
             % Private constructions
             obj.nFrames = size(obj.markers,1);
