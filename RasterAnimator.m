@@ -13,11 +13,11 @@ classdef RasterAnimator < Animator
     %keyPressCalback - handle UI
     properties (Access = private)
         statusMsg = 'RasterAnimator:\nFrame: %d\nframeRate: %d\n';
-        viewingWindow = -50:50
-        LineWidth = 3
     end
     
     properties (Access = public)
+        viewingWindow = -50:50
+        LineWidth = 3
         raster
         img
         animal

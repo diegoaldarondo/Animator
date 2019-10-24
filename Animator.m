@@ -1,4 +1,4 @@
-classdef (Abstract) Animator < Chart
+classdef (Abstract) Animator < FlexChart
     %Animator - Abstract superclass for data animation. Subclass of Chart.
     %
     %Animator Properties:
@@ -50,9 +50,19 @@ classdef (Abstract) Animator < Chart
         function obj = Animator(varargin)
             %Animator - constructor for Animator abstract class.
             
+            obj@FlexChart(varargin{:});
+            
             % User defined inputs
             if ~isempty(varargin)
-                set(obj,varargin{:});
+                for i = 1:numel(varargin)
+                    if strcmp(varargin{i},'Axes')
+                        varargin(i:i+1) = [];
+                        break
+                    end
+                end
+                if ~isempty(varargin)
+                    set(obj,varargin{:});
+                end
             end
             
             % Set up the figure and callback function
@@ -127,15 +137,15 @@ classdef (Abstract) Animator < Chart
                 case 'downarrow'
                     newVals = num2cell([obj.frameRate] - obj.slowDown);
                     [obj.frameRate] = newVals{:};
-                case 'space'
-                    newVals = num2cell(ones(numel(obj),1));
-                    [obj.frameRate] = newVals{:};
-                case 'control'
-                    newVals = num2cell(ones(numel(obj),1)*obj.ctrlSpeed);
-                    [obj.frameRate] = newVals{:};
-                case 'shift'
-                    newVals = num2cell(ones(numel(obj),1)*obj.shiftSpeed);
-                    [obj.frameRate] = newVals{:};
+%                 case 'space'
+%                     newVals = num2cell(ones(numel(obj),1));
+%                     [obj.frameRate] = newVals{:};
+%                 case 'control'
+%                     newVals = num2cell(ones(numel(obj),1)*obj.ctrlSpeed);
+%                     [obj.frameRate] = newVals{:};
+%                 case 'shift'
+%                     newVals = num2cell(ones(numel(obj),1)*obj.shiftSpeed);
+%                     [obj.frameRate] = newVals{:};
                 case {'1','2','3','4','5','6','7','8','9'}
                     val = str2double(keyPressed);
                     newVals = num2cell(repmat(val,numel(obj),1));
@@ -147,7 +157,7 @@ classdef (Abstract) Animator < Chart
     
     methods   
         function V = writeVideo(obj, frameIds, savePath ,varargin)
-            %writeMovie - write a MarkerMovie
+            %writeMovie - write an Animator movie
             %
             %   Syntax: Animator.writeMovie(frameIds,savePath,'FPS',30);
             %

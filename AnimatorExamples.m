@@ -19,6 +19,7 @@
 clear all;
 close all;
 clc;
+addpath(genpath('../../matlab_toolbox'))
 
 %% Get example video (requires image processing toolbox)
 folder = fileparts(which('cameraman.tif'));
