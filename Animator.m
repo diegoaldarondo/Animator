@@ -172,8 +172,11 @@ classdef (Abstract) Animator < FlexChart
             if (numel(linkedAnimators) == 1) && (~iscell(linkedAnimators))
                 linkedAnimators = {linkedAnimators};
             end
-            
-            fig = linkedAnimators{1}.Parent;
+            if isempty(linkedAnimators)
+                fig = obj.Parent;
+                linkedAnimators = cell(1);
+                linkedAnimators{1} = obj;
+            end
             V = cell(numel(frameIds),1);
             tic
             % Iterate through frames, update each Animator, and get the
