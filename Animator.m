@@ -90,10 +90,11 @@ classdef (Abstract) Animator < FlexChart
         end % get.frame
         
         function set.frame( obj, newFrame )
-            obj.frame= mod(newFrame,obj.nFrames);
-            if obj.frame == 0
-                obj.frame = obj.nFrames;
-            end
+            obj.frame = mod(newFrame,obj.nFrames);
+            obj.frame(obj.frame==0) = obj.nFrames;
+%             if obj.frame == 0
+%                 obj.frame = obj.nFrames;
+%             end
             update(obj)
         end % set.frame
         
@@ -126,11 +127,9 @@ classdef (Abstract) Animator < FlexChart
             % Consider rewriting.  
             switch keyPressed
                 case 'rightarrow'
-                    newVals = num2cell([obj.frame] + [obj.frameRate]);
-                    [obj.frame] = newVals{:};
+                    obj.frame = obj.frame + obj.frameRate;
                 case 'leftarrow'
-                    newVals = num2cell([obj.frame] - [obj.frameRate]);
-                    [obj.frame] = newVals{:};
+                    obj.frame = obj.frame - obj.frameRate;
                 case 'uparrow'
                     newVals = num2cell([obj.frameRate] + obj.speedUp);
                     [obj.frameRate] = newVals{:};
@@ -189,7 +188,7 @@ classdef (Abstract) Animator < FlexChart
                 end
                 
                 % Grab the image
-                F = getframe(fig);
+                F = getframe(obj.Parent);
                 V{nFrame} = F.cdata;
                 
                 % Print out an estimate of rendering time. 

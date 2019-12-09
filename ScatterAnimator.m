@@ -47,6 +47,7 @@ classdef ScatterAnimator < Animator
         poly
         scatterFig
         currentPoint
+        cmap = @magma
     end
     
     methods
@@ -79,7 +80,7 @@ classdef ScatterAnimator < Animator
             
             % Plot the current point
             obj.currentPoint = scatter(obj.Axes,obj.dataX(1),...
-                obj.dataY(1), 500,c(2,:),'.');
+                obj.dataY(1), 500, c(2,:),'.');
         end
 
         function keyPressCallback(obj,source,eventdata)
@@ -105,6 +106,10 @@ classdef ScatterAnimator < Animator
                     end
                 case 'r'
                     reset(obj);
+                case 'f'
+                    flow(obj);
+                case 'c'
+                    colorize(obj);
             end
             update(obj);
         end
@@ -143,7 +148,19 @@ classdef ScatterAnimator < Animator
     
     methods (Access = private)
         
+        function flow(obj)
+            framesToTrack = obj.frameInds;
+            restrict(obj, 1:size(obj.data,1))
+            obj.frame = framesToTrack;
+        end
+        
+        function colorize(obj)
+            c = obj.cmap(size(obj.currentPoint.XData, 2));
+            set(obj.currentPoint, 'CData', c) 
+        end
+        
         function reset(obj)
+            % Delete the polygon. 
             if ~isempty(obj.poly)
                 delete(obj.poly)
                 obj.poly = [];
@@ -151,8 +168,11 @@ classdef ScatterAnimator < Animator
             
             % Set embedMovie and associated MarkerMovies to the orig. size
             restrict(obj,1:size(obj.data,1));
+            
+            % Make sure the current point only has one color. 
+            c = lines(2);
+            set(obj.currentPoint, 'CData', c(2,:))
         end
-        
         
         function orderPoints(obj, dim)
             if dim == 1
@@ -179,7 +199,5 @@ classdef ScatterAnimator < Animator
             set(obj.currentPoint,'XData',obj.dataX(obj.frameInds(obj.frame)),...
                 'YData',obj.dataY(obj.frameInds(obj.frame)));
         end
-        
-        
     end
 end

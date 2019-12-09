@@ -156,7 +156,8 @@ set(fRaster,'pos',pos);
 %% Show how scatter animators work
 close all
 fScatter = figure('Name','Scatter Test');
-t = linspace(0, 2*pi, size(V,4));
+nPoints = 10000;
+t = linspace(0, 2*pi, nPoints);
 X = cos(t) + rand(size(t))*.2;
 Y = sin(t) + rand(size(t))*.2;
 ScatterAnimator([X; Y]');

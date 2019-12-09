@@ -40,6 +40,10 @@ classdef Scatter3Animator < Animator
         dataX
         dataY
         dataZ
+        t
+        isTurning = false
+        lineTail
+        inFlow = false
     end
     
     properties (Access = public)
@@ -48,6 +52,11 @@ classdef Scatter3Animator < Animator
         poly
         scatterFig
         currentPoint
+        az
+        el
+        turnRate = 1
+        tailLength = 5;
+        cmap = @magma
     end
     
     methods
@@ -79,11 +88,46 @@ classdef Scatter3Animator < Animator
             obj.dataY = obj.data(:,2);
             obj.dataZ = obj.data(:,3);
             
+            
             % Plot the current point
+            tailMap = magma(obj.tailLength);
+            widths = linspace(2.5, 4, obj.tailLength);
             obj.currentPoint = scatter3(obj.Axes,obj.dataX(1),...
                 obj.dataY(1),obj.dataZ(1), 500,c(2,:),'.');
-        end
+            prevFrames = mod((obj.frame - obj.tailLength):obj.frame, numel(obj.frameInds));
+            prevFrames(prevFrames == 0) = obj.nFrames;
+            prevFrames = obj.frameInds(prevFrames);            
+            obj.lineTail = gobjects(obj.tailLength,1);
+            for nTail = 1:obj.tailLength
+                tailFrames = prevFrames(nTail:nTail+1);
+                obj.lineTail(nTail) = plot3(obj.Axes,obj.dataX(tailFrames),...
+                obj.dataY(tailFrames),obj.dataZ(tailFrames),'color',tailMap(nTail,:),'LineWidth',widths(nTail));
+            end
 
+            
+            set(obj.getAxes(), 'XGrid','on','YGrid','on','ZGrid','on') 
+            [obj.az, obj.el] = view(obj.getAxes());
+        end
+        
+        function turn(obj)
+            [obj.az, obj.el] = view(obj.getAxes());
+            view(obj.getAxes(), obj.az + obj.turnRate, obj.el)
+        end
+        
+        function turnOn(obj)
+            obj.t = timer;
+            obj.t.Period = .05;
+            obj.t.TasksToExecute = inf;
+            obj.t.ExecutionMode = 'fixedRate';
+            obj.t.TimerFcn = @(src, event) obj.turn();
+            start(obj.t)
+        end
+        
+        function turnOff(obj)
+            stop(obj.t)
+            delete(obj.t)
+        end
+        
         function keyPressCallback(obj,source,eventdata)
             % determine the key that was pressed
             keyPressCallback@Animator(obj,source,eventdata);
@@ -107,43 +151,79 @@ classdef Scatter3Animator < Animator
                     end
                 case 'r'
                     reset(obj);
+                case 'f'
+                    flow(obj);
+                case 'c'
+                    colorize(obj);
+                case 'l'
+                    if ~obj.isTurning
+                        turnOn(obj);
+                        obj.isTurning = true;
+                    else 
+                        turnOff(obj);
+                        obj.isTurning = false;
+                    end
             end
             update(obj);
         end
         
-%         function inputPoly(obj)
-%             if obj.scope == obj.id
-%                 % Draw a poly and find the points within.
-%                 if isempty(obj.poly)
-%                     obj.poly = drawpolygon(obj.Axes,'Color','w');
-%                 else
-%                     obj.poly = drawpolygon(obj.Axes,'Color','w','Position',obj.poly.Position);
-%                 end
-%                 xv = obj.poly.Position(:,1);
-%                 yv = obj.poly.Position(:,2);
-%                 obj.pointsInPoly = inpolygon(obj.data(:,1),...
-%                     obj.data(:,2),xv,yv);
-%                 
-%                 % Find a window surrounding the frames within the polygon.
-%                 framesInPoly = obj.frameInds(obj.pointsInPoly);
-%                 framesInPoly = unique(framesInPoly);
-%                 framesInPoly = framesInPoly + obj.behaviorWindow;
-%                 framesInPoly = unique(sort(framesInPoly(:)));
-%                 framesInPoly = framesInPoly((framesInPoly > 0) &...
-%                     (framesInPoly <= numel(obj.frameInds)));
-%                 
-%                 if ~isempty(obj.links)
-%                     for i = 1:numel(obj.links)
-%                         restrict(obj.links{i},framesInPoly)
-%                     end
-%                 else
-%                     restrict(obj,framesInPoly);
-%                 end
-%             end
-%         end
+        function inputPoly(obj)
+            if obj.scope == obj.id
+                % Draw a poly and find the points within.
+                if isempty(obj.poly)
+                    obj.poly = drawpolygon(obj.Axes,'Color','w');
+                else
+                    obj.poly = drawpolygon(obj.Axes,'Color','w','Position',obj.poly.Position);
+                end
+                xv = obj.poly.Position(:,1);
+                yv = obj.poly.Position(:,2);
+                obj.pointsInPoly = inpolygon(obj.data(:,1),...
+                    obj.data(:,2),xv,yv);
+                
+                % Find a window surrounding the frames within the polygon.
+                framesInPoly = obj.frameInds(obj.pointsInPoly);
+                framesInPoly = unique(framesInPoly);
+                framesInPoly = framesInPoly + obj.behaviorWindow;
+                framesInPoly = unique(sort(framesInPoly(:)));
+                framesInPoly = framesInPoly((framesInPoly > 0) &...
+                    (framesInPoly <= numel(obj.frameInds)));
+                
+                if ~isempty(obj.links)
+                    for i = 1:numel(obj.links)
+                        restrict(obj.links{i},framesInPoly)
+                    end
+                else
+                    restrict(obj,framesInPoly);
+                end
+            end
+        end
     end
     
     methods (Access = private)
+        function flow(obj)
+            framesToTrack = obj.frameInds;
+            restrict(obj, 1:size(obj.data,1))
+            obj.frame = framesToTrack;
+            arrayfun(@(X) set(X,'Visible','off'), obj.lineTail)
+            set(obj.currentPoint, 'SizeData',200)
+            colors = lines(2);
+            c = repmat(colors(1,:),obj.nFrames,1);
+            c(obj.frame, :) = repmat(colors(2,:), numel(obj.frame),1);
+            set(obj.scatterFig, 'CData', c)
+            obj.inFlow = true;
+        end
+        
+        function scatterColorize(obj)
+            colors = lines(1);
+            c = repmat(colors(1,:),obj.nFrames,1);
+            c(obj.frame, :) = obj.cmap(size(obj.currentPoint.XData, 2));
+            set(obj.scatterFig, 'CData', c)
+        end
+        
+        function colorize(obj)
+            c = obj.cmap(size(obj.currentPoint.XData, 2));
+            set(obj.currentPoint, 'CData', c)
+        end
         
         function reset(obj)
             if ~isempty(obj.poly)
@@ -153,8 +233,14 @@ classdef Scatter3Animator < Animator
             
             % Set embedMovie and associated MarkerMovies to the orig. size
             restrict(obj,1:size(obj.data,1));
+            
+            % Make sure the current point only has one color.
+            c = lines(2);
+            set(obj.currentPoint, 'CData', c(2,:))
+            arrayfun(@(X) set(X,'Visible','on'), obj.lineTail)
+            set(obj.currentPoint, 'SizeData', 500)
+            obj.inFlow = false;
         end
-        
         
         function orderPoints(obj, dim)
             if dim == 1
@@ -182,8 +268,19 @@ classdef Scatter3Animator < Animator
                 'XData',obj.dataX(obj.frameInds(obj.frame)),...
                 'YData',obj.dataY(obj.frameInds(obj.frame)),...
                 'ZData',obj.dataZ(obj.frameInds(obj.frame)));
+            
+            prevFrames = mod((obj.frame - obj.tailLength):obj.frame, numel(obj.frameInds));
+            prevFrames(prevFrames == 0) = obj.nFrames;
+            prevFrames = obj.frameInds(prevFrames);            
+            for nTrail = 1:obj.tailLength
+                tailFrames = prevFrames(nTrail:nTrail+1);
+                set(obj.lineTail(nTrail), 'XData', obj.dataX(tailFrames),...
+                                           'YData', obj.dataY(tailFrames),...
+                                           'ZData', obj.dataZ(tailFrames));
+            end
+            if obj.inFlow
+                obj.scatterColorize()
+            end
         end
-        
-        
     end
 end
