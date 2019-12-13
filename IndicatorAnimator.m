@@ -25,6 +25,8 @@ classdef IndicatorAnimator < Animator
     
     methods
         function obj = IndicatorAnimator(logic, varargin)
+            [animatorArgs, ~, varargin] = parseClassArgs('Animator', varargin{:});
+            obj@Animator(animatorArgs{:});
             % User defined inputs
             if ~isempty(logic)
                 obj.logic = logic;

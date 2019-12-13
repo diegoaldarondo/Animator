@@ -56,6 +56,8 @@ classdef HeatMapAnimator < Animator
     
     methods
         function obj = HeatMapAnimator(X, varargin)
+            [animatorArgs, ~, varargin] = parseClassArgs('Animator', varargin{:});
+            obj@Animator(animatorArgs{:});
             % User defined inputs
             if ~isempty(X)
                 obj.X = X;
@@ -108,7 +110,9 @@ classdef HeatMapAnimator < Animator
                 case 'z'
                     obj.zImage();
                 case 't'
-                    obj.seqSort();
+                    if obj.scope == obj.id
+                        obj.seqSort();
+                    end
             end
             update(obj);
         end

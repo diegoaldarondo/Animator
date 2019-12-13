@@ -3,18 +3,18 @@ classdef (Abstract) Animator < FlexChart
     %
     %Animator Properties:
     %   frame - Frame of animation
-    %   frameRate - Current frame rate. 
-    %   frameInds - Indices to use in frame s.t. 
+    %   frameRate - Current frame rate.
+    %   frameInds - Indices to use in frame s.t.
     %               currentFrame = obj.frameInds(obj.frame)
     %   scope - Identifier for current Animator in selective callbacks
     %   id - Integer 1-9, identifier for scope
-    %   links - Cell array of linked Animators 
+    %   links - Cell array of linked Animators
     %   speedUp - Framerate increase rate.
     %   slowDown - Framerate decrease rate.
     %   ctrlSpeed - Framerate multiplier for ctrl.
     %   shiftSpeed - Framerate multiplier for shift.
     %
-    %Animator methods: 
+    %Animator methods:
     %   Animator - constructor
     %   delete - delete Animator
     %   get/set frame
@@ -28,7 +28,7 @@ classdef (Abstract) Animator < FlexChart
     %            Animators in links
     %            It is useful to assign this function as the
     %            WindowKeyPressFcn of a figure with multiple Animators.
-    %   linkAll - Link all Animators in a cell array together. 
+    %   linkAll - Link all Animators in a cell array together.
     properties (Access = protected)
         nFrames
     end
@@ -49,20 +49,12 @@ classdef (Abstract) Animator < FlexChart
     methods
         function obj = Animator(varargin)
             %Animator - constructor for Animator abstract class.
-            
-            obj@FlexChart(varargin{:});
+            [flexChartArgs, ~, varargin] = parseClassArgs('FlexChart', varargin{:});
+            obj@FlexChart(flexChartArgs{:});
             
             % User defined inputs
             if ~isempty(varargin)
-                for i = 1:numel(varargin)
-                    if strcmp(varargin{i},'Axes')
-                        varargin(i:i+1) = [];
-                        break
-                    end
-                end
-                if ~isempty(varargin)
-                    set(obj,varargin{:});
-                end
+                set(obj,varargin{:});
             end
             
             % Set up the figure and callback function
@@ -92,9 +84,6 @@ classdef (Abstract) Animator < FlexChart
         function set.frame( obj, newFrame )
             obj.frame = mod(newFrame,obj.nFrames);
             obj.frame(obj.frame==0) = obj.nFrames;
-%             if obj.frame == 0
-%                 obj.frame = obj.nFrames;
-%             end
             update(obj)
         end % set.frame
         
@@ -119,42 +108,30 @@ classdef (Abstract) Animator < FlexChart
             obj.frame = 1;
         end
         
-        function keyPressCallback(obj,source,eventdata)
+        function keyPressCallback(obj, source, eventdata)
             % Determine the key that was pressed
             keyPressed = eventdata.Key;
-            % The value updates are written this way to support 
-            % parallelization in very niche applications. 
-            % Consider rewriting.  
+            % The value updates are written this way to support
+            % parallelization in very niche applications.
+            % Consider rewriting.
             switch keyPressed
                 case 'rightarrow'
                     obj.frame = obj.frame + obj.frameRate;
                 case 'leftarrow'
                     obj.frame = obj.frame - obj.frameRate;
                 case 'uparrow'
-                    newVals = num2cell([obj.frameRate] + obj.speedUp);
-                    [obj.frameRate] = newVals{:};
+                    obj.frameRate = obj.frameRate + obj.speedUp;
                 case 'downarrow'
-                    newVals = num2cell([obj.frameRate] - obj.slowDown);
-                    [obj.frameRate] = newVals{:};
-%                 case 'space'
-%                     newVals = num2cell(ones(numel(obj),1));
-%                     [obj.frameRate] = newVals{:};
-%                 case 'control'
-%                     newVals = num2cell(ones(numel(obj),1)*obj.ctrlSpeed);
-%                     [obj.frameRate] = newVals{:};
-%                 case 'shift'
-%                     newVals = num2cell(ones(numel(obj),1)*obj.shiftSpeed);
-%                     [obj.frameRate] = newVals{:};
+                    obj.frameRate = obj.frameRate - obj.speedUp;
                 case {'1','2','3','4','5','6','7','8','9'}
                     val = str2double(keyPressed);
-                    newVals = num2cell(repmat(val,numel(obj),1));
-                    [obj.scope] = newVals{:};
+                    obj.scope = val;
                     fprintf('Scope is Animation %d\n', val);
             end
         end
     end
     
-    methods   
+    methods
         function V = writeVideo(obj, frameIds, savePath ,varargin)
             %writeMovie - write an Animator movie
             %
@@ -172,7 +149,6 @@ classdef (Abstract) Animator < FlexChart
                 linkedAnimators = {linkedAnimators};
             end
             if isempty(linkedAnimators)
-                fig = obj.Parent;
                 linkedAnimators = cell(1);
                 linkedAnimators{1} = obj;
             end
@@ -191,7 +167,7 @@ classdef (Abstract) Animator < FlexChart
                 F = getframe(obj.Parent);
                 V{nFrame} = F.cdata;
                 
-                % Print out an estimate of rendering time. 
+                % Print out an estimate of rendering time.
                 if nFrame == 100
                     rate = 100/(toc);
                     fprintf('Estimated time remaining: %f seconds\n',...
@@ -209,7 +185,7 @@ classdef (Abstract) Animator < FlexChart
         update(obj)
     end
     
-    methods (Static)      
+    methods (Static)
         
         function linkAll(h)
             for i = 1:numel(h)
@@ -217,6 +193,17 @@ classdef (Abstract) Animator < FlexChart
             end
             set(h{1}.Parent,'WindowKeyPressFcn',...
                 @(src,event) Animator.runAll(h,src,event))
+        end
+        
+        function tileAnimators(h)
+            nAnimators = numel(h);
+            pad = .075;
+            w = 1./nAnimators - 2*pad;
+            starts = (1./nAnimators)*[0:(nAnimators-1)] + pad;
+            for nAnimator = 1:nAnimators
+                ax = h{nAnimator}.getAxes();
+                set(ax, 'Position',[starts(nAnimator) pad w 1-2*pad])
+            end
         end
         
         function runAll(h,src,event)

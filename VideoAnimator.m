@@ -37,6 +37,8 @@ classdef VideoAnimator < Animator
     
     methods
         function obj = VideoAnimator(V, varargin)
+            [animatorArgs, ~, varargin] = parseClassArgs('Animator', varargin{:});
+            obj@Animator(animatorArgs{:});
             % User defined inputs
             if ~isempty(V)
                 obj.V = V;

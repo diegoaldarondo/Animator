@@ -28,6 +28,8 @@ classdef TraceAnimator < Animator
     
     methods
         function obj = TraceAnimator(X, Y, varargin)
+            [animatorArgs, ~, varargin] = parseClassArgs('Animator', varargin{:});
+            obj@Animator(animatorArgs{:});
             % User defined inputs
             if ~isempty(X)
                 obj.X = X;

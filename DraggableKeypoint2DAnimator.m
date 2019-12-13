@@ -63,7 +63,8 @@ classdef DraggableKeypoint2DAnimator < Animator
             %       skeleton.joints_idx: nSegments x 2 matrix of integers
             %           denoting directed edges between markers.
             %   Syntax: DraggableKeypoint2DAnimator(markers, skeleton, varargin);
-            obj@Animator(varargin{:});
+            [animatorArgs, ~, varargin] = parseClassArgs('Animator', varargin{:});
+            obj@Animator(animatorArgs{:});
 
             % Check inputs
             validateattributes(markers,{'numeric'},{'3d'})

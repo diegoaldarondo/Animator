@@ -52,7 +52,8 @@ classdef ScatterAnimator < Animator
     
     methods
         function obj = ScatterAnimator(data, varargin)
-            
+            [animatorArgs, ~, varargin] = parseClassArgs('Animator', varargin{:});
+            obj@Animator(animatorArgs{:});
             if ~isempty(data)
                 obj.data = data;
             end

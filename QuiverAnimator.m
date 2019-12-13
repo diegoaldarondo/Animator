@@ -3,10 +3,10 @@ classdef QuiverAnimator < Animator
     %vector field
     %Subclass of Animator.
     %
-    %Syntax: QuiverAnimator('data',data)
+    %Syntax: QuiverAnimator(data)
     %
     %QuiverAnimator Properties:
-    %   data - dataded points (replicated so size matches nFrames)
+    %   data - n x 2 data points
     %   scatterFig - handle to the background scatter plot
     %   currentPoint - handle to the current point
     %   poly - polygon defined in user input. 
@@ -50,7 +50,7 @@ classdef QuiverAnimator < Animator
         vectorSize = 1;
         normVectors = 1;
         densityThresh = 3;
-        cmap = @magma;
+        cmap = @parula;
         dataX
         dataY
         quiver
@@ -60,6 +60,8 @@ classdef QuiverAnimator < Animator
     
     methods
         function obj = QuiverAnimator(data, varargin)
+            [animatorArgs, ~, varargin] = parseClassArgs('Animator', varargin{:});
+            obj@Animator(animatorArgs{:});
             if ~isempty(data)
                 obj.data = data;
             end

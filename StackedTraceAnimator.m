@@ -31,6 +31,8 @@ classdef StackedTraceAnimator < Animator
     
     methods
         function obj = StackedTraceAnimator(X, Y, varargin)
+            [animatorArgs, ~, varargin] = parseClassArgs('Animator', varargin{:});
+            obj@Animator(animatorArgs{:});
             % User defined inputs
             if ~isempty(X)
                 obj.X = X;

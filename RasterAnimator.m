@@ -27,6 +27,8 @@ classdef RasterAnimator < Animator
     
     methods
         function obj = RasterAnimator(raster, varargin)
+            [animatorArgs, ~, varargin] = parseClassArgs('Animator', varargin{:});
+            obj@Animator(animatorArgs{:});
             % User defined inputs
             if ~isempty(raster)
                 obj.raster = raster;

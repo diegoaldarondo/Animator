@@ -59,7 +59,8 @@ classdef Keypoint2DAnimator < Animator
             %       skeleton.joints_idx: nSegments x 2 matrix of integers
             %           denoting directed edges between markers. 
             %   Syntax: Keypoint2DAnimator(markers, skeleton, varargin);
-            
+            [animatorArgs, ~, varargin] = parseClassArgs('Animator', varargin{:});
+            obj@Animator(animatorArgs{:});
             % Check inputs
             validateattributes(markers,{'numeric'},{'3d'})
             validateattributes(skeleton,{'struct'},{})
