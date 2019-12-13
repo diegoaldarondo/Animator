@@ -141,8 +141,7 @@ classdef (Abstract) Animator < FlexChart
             %           savePath - path to save movie
             %           varargin - arguments to write_frames.m.
             %
-            %   Notes: The writing function for .avi is different than the
-            %   one for .gifs. Be sure to use the correct varargs. 
+            %   Notes: The writing function for .avi is different t
             %
             %   Required .m files: write_frames.m
             
@@ -191,6 +190,7 @@ classdef (Abstract) Animator < FlexChart
                     end
                 end
             else
+               
                 write_frames(V,savePath,varargin{:}); 
             end
         end

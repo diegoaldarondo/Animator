@@ -55,8 +55,11 @@ classdef VideoAnimator < Animator
             if isempty(obj.nFrames)
                 obj.nFrames = size(obj.V,4);
             end
-            obj.frameInds = 1:obj.nFrames;
+            obj.frameInds = 1:obj.nFrames;   
+%             hold(obj.Axes,'off')
             obj.img = image(obj.Axes, obj.V(:,:,:, obj.frame));
+            axis(obj.Axes, 'off
+
         end
         
         function restrict(obj, newFrames)
