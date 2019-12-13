@@ -37,8 +37,6 @@ classdef Keypoint2DAnimator < Animator
     end
     
     properties (Access = public)
-        xlim
-        ylim
         MarkerSize = 20;
         LineWidth = 3;
         markers
@@ -81,13 +79,6 @@ classdef Keypoint2DAnimator < Animator
             if ~isempty(varargin)
                 set(obj,varargin{:});
             end
-            if isempty(obj.xlim)
-                obj.xlim = [min(min(obj.markers(:,1,:))) max(max(obj.markers(:,1,:)))];
-            end
-            if isempty(obj.ylim)
-                obj.ylim = [min(min(obj.markers(:,2,:))) max(max(obj.markers(:,2,:)))];
-            end 
-            set(obj.Axes,'xlim',obj.xlim,'ylim',obj.ylim);
             
             % Private constructions
             obj.nFrames = size(obj.markers,1);

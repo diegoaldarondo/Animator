@@ -21,6 +21,8 @@ classdef IndicatorAnimator < Animator
         logic
         Patch
         Color = 'r';
+        patchX = [0 1 1 0];
+        patchY = [0 0 1 1];
     end
     
     methods
@@ -40,13 +42,12 @@ classdef IndicatorAnimator < Animator
                 obj.nFrames = size(obj.logic, 1);
             end
             obj.frameInds = 1:obj.nFrames;
-            axes(obj.Axes)
             if obj.logic(1)                
-                obj.Patch = patch([0 1 1 0], [0 0 1 1],obj.Color,'FaceAlpha',.5,'LineStyle','none');
+                obj.Patch = patch(obj.Axes, obj.patchX, obj.patchY, obj.Color,'FaceAlpha',.5,'LineStyle','none');
             else 
-                obj.Patch = patch([0 1 1 0], [0 0 1 1],obj.Color,'FaceAlpha',0,'LineStyle','none');
+                obj.Patch = patch(obj.Axes, obj.patchX, obj.patchY, obj.Color,'FaceAlpha',0,'LineStyle','none');
             end
-            axis off;
+            axis(obj.Axes,'off');
         end
         
         function restrict(obj, newFrames)

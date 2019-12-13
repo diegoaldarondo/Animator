@@ -9,7 +9,9 @@ function [classArgs, classInds, nonClassArgs] = parseClassArgs(className, vararg
 %               arguments. 
 % Syntax: 
 %   [classArgs, classInds] = parseClassArgs(className, varargin{:})
-names = varargin(cellfun(@ischar, varargin));
+nameIds = cellfun(@ischar, varargin);
+nameIds(2:2:end) = false;
+names = varargin(nameIds);
 classInds = repelem(contains(names, properties(className)),1,2);
 classArgs = varargin(classInds);
 nonClassArgs = varargin(~classInds);

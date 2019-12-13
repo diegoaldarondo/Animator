@@ -197,7 +197,7 @@ classdef (Abstract) Animator < FlexChart
         
         function tileAnimators(h)
             nAnimators = numel(h);
-            pad = .075;
+            pad = .05;
             w = 1./nAnimators - 2*pad;
             starts = (1./nAnimators)*[0:(nAnimators-1)] + pad;
             for nAnimator = 1:nAnimators
