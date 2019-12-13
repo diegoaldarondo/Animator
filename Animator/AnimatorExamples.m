@@ -19,7 +19,6 @@
 clear all;
 close all;
 clc;
-addpath(genpath('../../matlab_toolbox'))
 
 %% Get example video (requires image processing toolbox)
 folder = fileparts(which('cameraman.tif'));
@@ -268,5 +267,5 @@ savePath = 'ExampleVideo.avi';
 frames = 1:200;
 
 % Uncomment to write the Animation to video. 
-% h{1}.writeVideo(frames, savePath, 'FPS', 30, 'Quality', 70);
+h{1}.writeVideo(frames, savePath, 'FPS', 30, 'Quality', 70);
 

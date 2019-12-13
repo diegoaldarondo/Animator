@@ -1,0 +1,8 @@
+function [M, I] = rowmax(X, absolute)
+%ROWMAX Returns the max of each row of 
+%   Detailed explanation goes here
+A_maxidx = sub2ind(size(A_fg), (1:size(A_fg,1))', argmax(abs(A_fg),2));
+A_merged = A_fg(A_maxidx);
+
+end
+

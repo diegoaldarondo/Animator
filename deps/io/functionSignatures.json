@@ -1,0 +1,3 @@
+{
+"matvars": {"inputs": [{"name":"matfilepath","type":"filepath=*.mat"}]}
+}

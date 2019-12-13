@@ -1,4 +1,4 @@
-function [gX, gY, gdX, gdY, gstddX, gstddY, gstddAng] = quiverVars(X, Y, varargin)
+function [gX, gY, gdX, gdY] = quiverVars(X, Y, varargin)
 % Create a grid representation of the vectorfield of variables X and Y. For
 % use in quiver function. 
 % usage:
@@ -55,8 +55,8 @@ ypts = prctile(Y, lbound):step:prctile(Y, ubound);
 [gX, gY] = meshgrid(xpts,ypts);
 
 % Calculate the median gradient within the mesh bins
-[gdX, gstddX] = deal(zeros(size(gX)));
-[gdY, gstddY, gstddAng] = deal(zeros(size(gY)));
+gdX = zeros(size(gX));
+gdY = zeros(size(gY));
 for ngX = 1:size(gX,2)-1
     for ngY = 1:size(gY,1)-1
         inX = X > gX(1, ngX) & X <= gX(1,ngX+1);
@@ -67,9 +67,6 @@ for ngX = 1:size(gX,2)-1
         end
         gdX(ngY,ngX) = median(dX(in));
         gdY(ngY,ngX) = median(dY(in));
-        gstddX(ngY,ngX) = nanstd(dX(in));
-        gstddY(ngY,ngX) = nanstd(dY(in));
-        gstddAng(ngY,ngX) = circ_std(atan2(dY(in), dX(in))');
     end
 end
 end
