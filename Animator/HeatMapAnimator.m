@@ -84,9 +84,9 @@ classdef HeatMapAnimator < Animator
             obj.stds = nanstd(obj.X);
             obj.zImage()
             obj.c = colorbar(obj.Axes);
-%             lims = [min(obj.frame+obj.viewingWindow) max(obj.frame+obj.viewingWindow)];
-% %             xlim(obj.Axes,lims)
-% %             hold(obj.Axes,'on');
+            lims = [min(obj.frame+obj.viewingWindow) max(obj.frame+obj.viewingWindow)];
+            xlim(obj.Axes,lims)
+%             hold(obj.Axes,'on');
             
             % Plot the current frame line
             obj.centerLine = line(obj.Axes,[obj.frame obj.frame],...
@@ -190,6 +190,7 @@ classdef HeatMapAnimator < Animator
     
     methods (Access = protected)
         function update(obj)
+            obj.checkVisible
             lims = [min(obj.frameInds(obj.frame)+obj.viewingWindow) max(obj.frameInds(obj.frame)+obj.viewingWindow)];
             set(obj.Axes, 'XLim', lims)
             set(obj.centerLine,'XData',[obj.frameInds(obj.frame) obj.frameInds(obj.frame)],'YData', get(obj.Axes,'YLim'));

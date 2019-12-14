@@ -197,6 +197,7 @@ classdef ScatterAnimator < Animator
     
     methods (Access = protected)
         function update(obj)
+            obj.checkVisible
             set(obj.currentPoint,'XData',obj.dataX(obj.frameInds(obj.frame)),...
                 'YData',obj.dataY(obj.frameInds(obj.frame)));
         end

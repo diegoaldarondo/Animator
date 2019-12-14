@@ -57,6 +57,7 @@ classdef VideoAnimator < Animator
             end
             obj.frameInds = 1:obj.nFrames;
             obj.img = image(obj.Axes, obj.V(:,:,:, obj.frame));
+            axis(obj.Axes, 'ij','tight')
         end
         
         function restrict(obj, newFrames)
@@ -88,6 +89,7 @@ classdef VideoAnimator < Animator
     
     methods (Access = protected)
         function update(obj)
+            obj.checkVisible
             set(obj.img,'CData',obj.V(:,:,:,  obj.frameInds(obj.frame)));
         end
     end

@@ -38,6 +38,7 @@ classdef (Abstract) Animator < FlexChart
         frameRate = 1;
         frame = 1;
         id
+        isVisible
         scope
         links
         speedUp = 10;
@@ -127,6 +128,14 @@ classdef (Abstract) Animator < FlexChart
                     val = str2double(keyPressed);
                     obj.scope = val;
                     fprintf('Scope is Animation %d\n', val);
+            end
+        end
+        
+        function checkVisible(obj)
+            if ~isempty(obj.isVisible)
+                vis = obj.isVisible(obj.frameInds(obj.frame));
+                arrayfun(@(X) set(X, 'Visible', vis), obj.Axes.Children)
+                set(obj.Axes, 'Visible', vis)
             end
         end
     end

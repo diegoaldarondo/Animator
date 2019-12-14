@@ -257,6 +257,7 @@ classdef DraggableKeypoint2DAnimator < Animator
     
     methods (Access = protected)
         function update(obj)
+            obj.checkVisible
             % Find color groups
             [colors,~,cIds] = unique(obj.color,'rows');
             

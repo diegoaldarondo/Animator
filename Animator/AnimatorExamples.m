@@ -81,7 +81,7 @@ pos = [200 200 size(V,2)*2 size(V,1)*2];
 set(fVidKp2d,'pos',pos);
 %%
 % If you resize the figure, you'll notice that the two animators don't
-% resize together. To do that, just place the keypoint animator in the same
+% always together. To do that, just place the keypoint animator in the same
 % axes as the videoAnimator
 close all
 fVidKp2d = figure('Name','Combination Test');
@@ -267,5 +267,5 @@ savePath = 'ExampleVideo.avi';
 frames = 1:200;
 
 % Uncomment to write the Animation to video. 
-h{1}.writeVideo(frames, savePath, 'FPS', 30, 'Quality', 70);
+% h{1}.writeVideo(frames, savePath, 'FPS', 30, 'Quality', 70);
 
