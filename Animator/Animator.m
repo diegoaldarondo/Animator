@@ -215,8 +215,8 @@ classdef (Abstract) Animator < FlexChart
             for i = 1:numel(h)
                 h{i}.links = h;
             end
-            set(h{1}.Parent,'WindowKeyPressFcn',...
-                @(src,event) Animator.runAll(h,src,event))
+            cellfun(@(X) set(X.Parent,'WindowKeyPressFcn',...
+                @(src,event) Animator.runAll(h,src,event)), h)
         end
         
         function tileAnimators(h)

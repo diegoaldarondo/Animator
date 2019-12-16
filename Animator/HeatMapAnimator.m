@@ -78,11 +78,11 @@ classdef HeatMapAnimator < Animator
             % Plot the first image
             hold(obj.Axes,'off')
             obj.img = imagesc(obj.Axes, obj.X');
-            colormap(parula)
+%             colormap(parula)
             obj.origCLims = prctile(obj.X(:), [2.5 97.5]);
             obj.means = nanmean(obj.X);
             obj.stds = nanstd(obj.X);
-            obj.zImage()
+%             obj.zImage()
             obj.c = colorbar(obj.Axes);
             lims = [min(obj.frame+obj.viewingWindow) max(obj.frame+obj.viewingWindow)];
             xlim(obj.Axes,lims)

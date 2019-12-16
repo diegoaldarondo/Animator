@@ -38,8 +38,6 @@ classdef DraggableKeypoint2DAnimator < Animator
     end
     
     properties (Access = public)
-        xlim
-        ylim
         MarkerSize = 20;
         LineWidth = 3;
         markers
@@ -87,13 +85,6 @@ classdef DraggableKeypoint2DAnimator < Animator
                 set(obj,varargin{:});
             end
             obj.origMarkers = obj.markers;
-            if isempty(obj.xlim)
-                obj.xlim = [min(min(obj.markers(:,1,:))) max(max(obj.markers(:,1,:)))];
-            end
-            if isempty(obj.ylim)
-                obj.ylim = [min(min(obj.markers(:,2,:))) max(max(obj.markers(:,2,:)))];
-            end
-%             set(obj.Axes,'xlim',obj.xlim,'ylim',obj.ylim);
             
             % Private constructions
             obj.nFrames = size(obj.markers,1);
@@ -139,8 +130,8 @@ classdef DraggableKeypoint2DAnimator < Animator
             frameX = obj.markersX(obj.frameInds(obj.frame),:);
             frameY = obj.markersY(obj.frameInds(obj.frame),:);
             obj.points = obj.dragpoints(obj.Axes, frameX, frameY,...
-                'LineStyle', 'none', 'Marker', '.', 'MarkerSize',...
-                20, 'Color', 'w');
+                'LineStyle', 'none','LineWidth',1, 'Marker', '.', 'MarkerSize',...
+                20, 'Color', 'y');
         end
         
         function restrict(obj, newFrames)
