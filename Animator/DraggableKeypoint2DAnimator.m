@@ -218,6 +218,13 @@ classdef DraggableKeypoint2DAnimator < Animator
             obj.update();
         end
         
+        function deleteSelectedNode(obj)
+            obj.points.XData(obj.selectedNode) = nan;
+            obj.points.YData(obj.selectedNode) = nan;
+            obj.stopdragging(obj.Parent,[]);
+            obj.update();
+        end
+        
         function keyPressCallback(obj,source,eventdata)
             % keyPressCallback - Handle UI
             % Extends Animator callback function
@@ -231,6 +238,10 @@ classdef DraggableKeypoint2DAnimator < Animator
                 case 'h'
                     message = obj(1).instructions;
                     fprintf(message);
+                case 'backspace'
+                    if ~isnan(obj.selectedNode)
+                        obj.deleteSelectedNode();
+                    end
 %                 case 's'
 %                     fprintf(obj(1).statusMsg,...
 %                         obj(1).frameInds(obj(1).frame),obj(1).frameRate);
