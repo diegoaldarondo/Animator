@@ -110,6 +110,8 @@ classdef (Abstract) Animator < FlexChart
         end
         
         function keyPressCallback(obj, source, eventdata)
+            set(obj.Axes.Parent ,'NumberTitle','off',...
+                'Name',sprintf('Frame: %d',obj.frameInds(obj.frame(1))));
             % Determine the key that was pressed
             keyPressed = eventdata.Key;
             % The value updates are written this way to support
