@@ -205,6 +205,7 @@ classdef DraggableKeypoint2DAnimator < Animator
             % Stop dragging mode
             set(fig,'windowbuttonmotionfcn','')
             set(fig,'windowbuttonupfcn','')
+            obj.selectedNode = nan;
         end
         
         function resetFrame(obj)
@@ -238,13 +239,6 @@ classdef DraggableKeypoint2DAnimator < Animator
                 case 'h'
                     message = obj(1).instructions;
                     fprintf(message);
-                case 'backspace'
-                    if ~isnan(obj.selectedNode)
-                        obj.deleteSelectedNode();
-                    end
-%                 case 's'
-%                     fprintf(obj(1).statusMsg,...
-%                         obj(1).frameInds(obj(1).frame),obj(1).frameRate);
                 case 'r'
                     reset(obj);
             end
