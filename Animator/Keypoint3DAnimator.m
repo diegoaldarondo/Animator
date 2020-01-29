@@ -177,9 +177,9 @@ classdef Keypoint3DAnimator < Animator
             [colors,~,cIds] = unique(obj.color,'rows');
             
             % Get the joints for the current frame
-            curX = obj.markersX(obj.frameInds(obj.frame),:);
-            curY = obj.markersY(obj.frameInds(obj.frame),:);
-            curZ = obj.markersZ(obj.frameInds(obj.frame),:);
+            curX = obj.markersX(obj.frame,:);
+            curY = obj.markersY(obj.frame,:);
+            curZ = obj.markersZ(obj.frame,:);
             curX = curX(obj.joints)';
             curY = curY(obj.joints)';
             curZ = curZ(obj.joints)';

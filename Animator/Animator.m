@@ -153,7 +153,8 @@ classdef (Abstract) Animator < FlexChart
             %           varargin - arguments to write_frames.m.
             %
             %   Notes: The writing function for .avi is different than the
-            %   one for .gifs. Be sure to use the correct varargs. 
+            %   one for .gifs. Be sure to use the correct varargs E.g.
+            %   "DelayTime" for gifs, "FPS" for avi.
             %
             %   Required .m files: write_frames.m
             
@@ -170,12 +171,17 @@ classdef (Abstract) Animator < FlexChart
             tic
             % Iterate through frames, update each Animator, and get the
             % image.
+            origFrame = linkedAnimators{1}.frame;
             for nFrame = 1:numel(frameIds)
                 % Sometimes you might want to change this syntax if you've
                 % restricted frames via Animator.restrict.
                 for nAnimator = 1:numel(linkedAnimators)
                     linkedAnimators{nAnimator}.frame = frameIds(nFrame);
                 end
+%                 for nAnimator = 1:numel(linkedAnimators)
+% %                     linkedAnimators{nAnimator}.frame = linkedAnimators{nAnimator}.frame+1;
+%                     linkedAnimators{nAnimator}.frame = origFrame+(frameIds(nFrame));
+%                 end
                 
                 % Grab the image
                 F = getframe(obj.Parent);
@@ -221,9 +227,12 @@ classdef (Abstract) Animator < FlexChart
                 @(src,event) Animator.runAll(h,src,event)), h)
         end
         
-        function tileAnimators(h)
+        function tileAnimators(h, varargin)
             nAnimators = numel(h);
             pad = .05;
+            if ~isempty(varargin)
+                pad = varargin{1};
+            end
             w = 1./nAnimators - 2*pad;
             starts = (1./nAnimators)*[0:(nAnimators-1)] + pad;
             for nAnimator = 1:nAnimators

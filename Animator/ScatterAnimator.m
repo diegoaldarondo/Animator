@@ -48,6 +48,9 @@ classdef ScatterAnimator < Animator
         scatterFig
         currentPoint
         cmap = @magma
+        lineTail
+        tailLength = 5;
+        inFlow = false
     end
     
     methods
@@ -78,10 +81,21 @@ classdef ScatterAnimator < Animator
             % indexing a whole lot easier later.
             obj.dataX = obj.data(:,1);
             obj.dataY = obj.data(:,2);
-            
+
             % Plot the current point
+            tailMap = magma(obj.tailLength);
+            widths = linspace(2.5, 4, obj.tailLength);
             obj.currentPoint = scatter(obj.Axes,obj.dataX(1),...
-                obj.dataY(1), 500, c(2,:),'.');
+                obj.dataY(1), 500,c(2,:),'.');
+            prevFrames = mod((obj.frame - obj.tailLength):obj.frame, numel(obj.frameInds));
+            prevFrames(prevFrames == 0) = obj.nFrames;
+            prevFrames = obj.frameInds(prevFrames);            
+            obj.lineTail = gobjects(obj.tailLength,1);
+            for nTail = 1:obj.tailLength
+                tailFrames = prevFrames(nTail:nTail+1);
+                obj.lineTail(nTail) = plot(obj.Axes,obj.dataX(tailFrames),...
+                    obj.dataY(tailFrames),'color',tailMap(nTail,:),'LineWidth',widths(nTail));
+            end
         end
 
         function keyPressCallback(obj,source,eventdata)
@@ -152,6 +166,7 @@ classdef ScatterAnimator < Animator
         function flow(obj)
             framesToTrack = obj.frameInds;
             restrict(obj, 1:size(obj.data,1))
+            arrayfun(@(X) set(X,'Visible','off'), obj.lineTail)
             obj.frame = framesToTrack;
         end
         
@@ -173,6 +188,9 @@ classdef ScatterAnimator < Animator
             % Make sure the current point only has one color. 
             c = lines(2);
             set(obj.currentPoint, 'CData', c(2,:))
+            arrayfun(@(X) set(X,'Visible','on'), obj.lineTail)
+            set(obj.currentPoint, 'SizeData', 500)
+            obj.inFlow = false;
         end
         
         function orderPoints(obj, dim)
@@ -200,6 +218,14 @@ classdef ScatterAnimator < Animator
             obj.checkVisible
             set(obj.currentPoint,'XData',obj.dataX(obj.frameInds(obj.frame)),...
                 'YData',obj.dataY(obj.frameInds(obj.frame)));
+            prevFrames = mod((obj.frame - obj.tailLength):obj.frame, numel(obj.frameInds));
+            prevFrames(prevFrames == 0) = obj.nFrames;
+            prevFrames = obj.frameInds(prevFrames);            
+            for nTrail = 1:obj.tailLength
+                tailFrames = prevFrames(nTrail:nTrail+1);
+                set(obj.lineTail(nTrail), 'XData', obj.dataX(tailFrames),...
+                                           'YData', obj.dataY(tailFrames));
+            end
         end
     end
 end

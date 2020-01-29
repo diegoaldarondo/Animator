@@ -205,12 +205,11 @@ classdef DraggableKeypoint2DAnimator < Animator
             % Stop dragging mode
             set(fig,'windowbuttonmotionfcn','')
             set(fig,'windowbuttonupfcn','')
+            obj.selectedNode = nan;
             
-            % Run the figure's windowKeyPress fcn to allow for syncing
+            % Run the figure's windowKeyPress fcn
             E.Key = 'temp';
             fig.WindowKeyPressFcn([],E)
-            
-            obj.selectedNode = nan;
         end
         
         function resetFrame(obj)

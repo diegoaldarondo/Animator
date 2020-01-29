@@ -105,7 +105,6 @@ classdef Scatter3Animator < Animator
                 obj.dataY(tailFrames),obj.dataZ(tailFrames),'color',tailMap(nTail,:),'LineWidth',widths(nTail));
             end
 
-            
             set(obj.getAxes(), 'XGrid','on','YGrid','on','ZGrid','on') 
             [obj.az, obj.el] = view(obj.getAxes());
         end

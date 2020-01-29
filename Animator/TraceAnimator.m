@@ -43,7 +43,7 @@ classdef TraceAnimator < Animator
             
             % Handle defaults
             if isempty(obj.nFrames)
-                obj.nFrames = size(obj.X,1);
+                obj.nFrames = numel(obj.X);
             end
             obj.frameInds = 1:obj.nFrames;
             axes(obj.Axes)
@@ -89,7 +89,7 @@ classdef TraceAnimator < Animator
         function update(obj)
             obj.checkVisible
             lims = [min(obj.frameInds(obj.frame)+obj.viewingWindow) max(obj.frameInds(obj.frame)+obj.viewingWindow)];
-            set(obj.centerLine,'XData',[obj.frame obj.frame],'YData', get(gca,'YLim'));
+            set(obj.centerLine,'XData',[obj.frameInds(obj.frame) obj.frameInds(obj.frame)],'YData', get(gca,'YLim'));
             set(obj.Axes, 'XLim', lims)
         end
     end

@@ -37,7 +37,7 @@ classdef HeatMapAnimator < Animator
     %Tips: Press 'z' to flip between zscored and non zscored image.  
     properties (Access = private)
         statusMsg = 'HeatMapAnimator:\nFrame: %d\nframeRate: %d\n';
-        viewingWindow = -30:30
+        viewingWindow = -5:5
         LineWidth = 3
     end
     
