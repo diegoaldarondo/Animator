@@ -89,9 +89,9 @@ classdef Keypoint3DAnimator < Animator
             else
                 obj.nFrames = numel(obj.frameInds);
             end
-            obj.markersX = obj.markers(:,1,:);
-            obj.markersY = obj.markers(:,2,:);
-            obj.markersZ = obj.markers(:,3,:);
+            obj.markersX = squeeze(obj.markers(:,1,:));
+            obj.markersY = squeeze(obj.markers(:,2,:));
+            obj.markersZ = squeeze(obj.markers(:,3,:));
             obj.nMarkers = size(obj.markers,3);
             
             % Get color groups
