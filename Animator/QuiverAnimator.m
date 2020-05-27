@@ -15,6 +15,8 @@ classdef QuiverAnimator < Animator
     %   vectorSize - size of unit vectors
     %   normVectors - 1 or 0, if 1 normalize vectors to unit length,
     %                 otherwise use speed as the magnitude of the vector.
+    %   densityThresh - Number of points in voxel required to plot arrow. 
+    %                   Default 3. 
     %   cmap - colormap to use for vectorfield.
     %   dataX - X dimension of datading
     %   dataY - Y dimension of datading
