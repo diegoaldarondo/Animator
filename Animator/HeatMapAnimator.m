@@ -107,8 +107,8 @@ classdef HeatMapAnimator < Animator
                         obj.frameInds(obj.frame),obj.frameRate);
                 case 'r'
                     reset(obj);
-                case 'z'
-                    obj.zImage();
+%                 case 'z'
+%                     obj.zImage();
                 case 't'
                     if obj.scope == obj.id
                         obj.seqSort();
