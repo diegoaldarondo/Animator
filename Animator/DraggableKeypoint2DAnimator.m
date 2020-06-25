@@ -47,6 +47,7 @@ classdef DraggableKeypoint2DAnimator < Animator
         PlotSegments
         points
         selectedNode
+        selectedNodePosition
     end
     
     methods
@@ -171,6 +172,8 @@ classdef DraggableKeypoint2DAnimator < Animator
             end
         end
         
+
+        
         function index = getSelectedNode(obj, src)
             % Find the index of the clicked node
             
@@ -182,10 +185,12 @@ classdef DraggableKeypoint2DAnimator < Animator
             x=src.XData;
             y=src.YData;
             
+            
             % Check which data point has the smallest distance to the dragged point
             x_diff = abs(x-coords(1,1,1));
             y_diff = abs(y-coords(1,2,1));
             [~, index] = min(sqrt(x_diff.^2+y_diff.^2));
+            obj.selectedNodePosition = [x(index), y(index)];
         end
         
         function dragmarker(obj, fig, ev,src)
@@ -211,6 +216,7 @@ classdef DraggableKeypoint2DAnimator < Animator
             fig.WindowKeyPressFcn([],E)
             
             obj.selectedNode = nan;
+            obj.selectedNodePosition = [];
         end
         
         function resetFrame(obj)
