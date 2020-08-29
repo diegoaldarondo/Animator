@@ -132,7 +132,10 @@ classdef DraggableKeypoint2DAnimator < Animator
             frameY = obj.markersY(obj.frameInds(obj.frame),:);
             obj.points = obj.dragpoints(obj.Axes, frameX, frameY,...
                 'LineStyle', 'none','LineWidth',1, 'Marker', '.', 'MarkerSize',...
-                20, 'Color', 'y');
+                20, 'Color', [1 1 1]);
+            ax = handle(obj.Axes);
+            disableDefaultInteractivity(ax)
+            ax.Interactions = [zoomInteraction regionZoomInteraction rulerPanInteraction];
         end
         
         function restrict(obj, newFrames)
@@ -154,8 +157,9 @@ classdef DraggableKeypoint2DAnimator < Animator
             % for multicolor lines. 
             % Consider reimplementing with draggable()
             lines = line(ax, x,y,'hittest','on','buttondownfcn',...
-                @obj.clickmarker,'PickableParts','all','Visible','off',...
+                @obj.clickmarker,'PickableParts','all','Visible','on',...
                 varargin{:});
+            
         end
         
         function clickmarker(obj, src, ev)
@@ -171,8 +175,6 @@ classdef DraggableKeypoint2DAnimator < Animator
                 delete(lines(nLine).Children)
             end
         end
-        
-
         
         function index = getSelectedNode(obj, src)
             % Find the index of the clicked node
@@ -210,7 +212,7 @@ classdef DraggableKeypoint2DAnimator < Animator
             % Stop dragging mode
             set(fig,'windowbuttonmotionfcn','')
             set(fig,'windowbuttonupfcn','')
-            
+
             % Run the figure's windowKeyPress fcn to allow for syncing
             E.Key = 'temp';
             fig.WindowKeyPressFcn([],E)
