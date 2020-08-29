@@ -39,6 +39,7 @@ classdef DraggableKeypoint2DAnimator < Animator
     
     properties (Access = public)
         MarkerSize = 20;
+        DragPointColor = [1 1 1];
         LineWidth = 3;
         markers
         markersX
@@ -48,6 +49,7 @@ classdef DraggableKeypoint2DAnimator < Animator
         points
         selectedNode
         selectedNodePosition
+        visibleDragPoints = false
     end
     
     methods
@@ -132,7 +134,7 @@ classdef DraggableKeypoint2DAnimator < Animator
             frameY = obj.markersY(obj.frameInds(obj.frame),:);
             obj.points = obj.dragpoints(obj.Axes, frameX, frameY,...
                 'LineStyle', 'none','LineWidth',1, 'Marker', '.', 'MarkerSize',...
-                20, 'Color', [1 1 1]);
+                20, 'Color', obj.DragPointColor);
             ax = handle(obj.Axes);
             disableDefaultInteractivity(ax)
             ax.Interactions = [zoomInteraction regionZoomInteraction rulerPanInteraction];
@@ -157,7 +159,7 @@ classdef DraggableKeypoint2DAnimator < Animator
             % for multicolor lines. 
             % Consider reimplementing with draggable()
             lines = line(ax, x,y,'hittest','on','buttondownfcn',...
-                @obj.clickmarker,'PickableParts','all','Visible','on',...
+                @obj.clickmarker,'PickableParts','all','Visible',obj.visibleDragPoints,...
                 varargin{:});
             
         end
