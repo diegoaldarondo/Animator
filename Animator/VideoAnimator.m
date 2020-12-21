@@ -33,6 +33,7 @@ classdef VideoAnimator < Animator
     properties (Access = public)
         V
         img
+        clim
     end
     
     methods
@@ -56,7 +57,11 @@ classdef VideoAnimator < Animator
                 obj.nFrames = size(obj.V,4);
             end
             obj.frameInds = 1:obj.nFrames;
-            obj.img = image(obj.Axes, obj.V(:,:,:, obj.frame));
+            if ~isempty(obj.clim)
+                obj.img = imagesc(obj.Axes, obj.V(:,:,:, obj.frame), obj.clim);
+            else
+                obj.img = imagesc(obj.Axes, obj.V(:,:,:, obj.frame));
+            end
             axis(obj.Axes, 'ij','tight')
         end
         
