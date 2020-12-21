@@ -62,6 +62,7 @@ addOptional(p, 'plotarrows', true, @isnumeric)
 addOptional(p, 'autoscale', false, @isnumeric)
 addOptional(p, 'cmap', @viridis, @(X) isa(X, 'function_handle'))
 addOptional(p, 'nColors', 64, @isnumeric)
+addOptional(p, 'density', [], @isnumeric)
 
 parse(p, varargin{:});
 lw = p.Results.LineWidth;
@@ -72,6 +73,7 @@ beta = p.Results.beta;
 plotarrows = p.Results.plotarrows;
 autoscale = p.Results.autoscale;
 cmap = p.Results.cmap;
+density = p.Results.density;
 
 % Parse the string inputs
 nin = numel(varargin);
@@ -122,7 +124,13 @@ if numel(v)==1, v = v(ones(size(u))); end
 % Define colormap
 vr=sqrt(u.^2+v.^2);
 nColors = 64;
-vrn=round(vr/max(vr(:))*nColors);
+
+if ~isempty(density)
+    vrn=round(density/max(density(:))*nColors);
+else
+    vrn=round(vr/max(vr(:))*nColors);
+end
+    
 
 % CC=colormap(nColors);
 CC = cmap(nColors);

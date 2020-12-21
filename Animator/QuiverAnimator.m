@@ -86,7 +86,7 @@ classdef QuiverAnimator < Animator
                 X = obj.data(:,1);
                 Y = obj.data(:,2);
             end
-            [gX, gY, gdX, gdY] = ...
+            [gX, gY, gdX, gdY, density] = ...
                 quiverVars(X,Y,'step',obj.step,'densityThresh',obj.densityThresh,'ubound',100,'lbound',0);
             obj.quiver = quiverc(gX,gY,gdX,gdY,'NormVectors',obj.normVectors,'VectorSize',obj.vectorSize,'cmap',obj.cmap);
             xlim(obj.Axes,[min(obj.data(:,1)) max(obj.data(:,1))])

@@ -1,4 +1,4 @@
-function [gX, gY, gdX, gdY] = quiverVars(X, Y, varargin)
+function [gX, gY, gdX, gdY, density] = quiverVars(X, Y, varargin)
 % Create a grid representation of the vectorfield of variables X and Y. For
 % use in quiver function. 
 % usage:
@@ -57,6 +57,7 @@ ypts = prctile(Y, lbound):step:prctile(Y, ubound);
 % Calculate the median gradient within the mesh bins
 gdX = zeros(size(gX));
 gdY = zeros(size(gY));
+density = zeros(size(gdX));
 for ngX = 1:size(gX,2)-1
     for ngY = 1:size(gY,1)-1
         inX = X > gX(1, ngX) & X <= gX(1,ngX+1);
@@ -65,6 +66,7 @@ for ngX = 1:size(gX,2)-1
         if sum(in) < densityThresh
             continue;
         end
+        density(ngY, ngX) = sum(in);
         gdX(ngY,ngX) = median(dX(in));
         gdY(ngY,ngX) = median(dY(in));
     end
