@@ -37,7 +37,6 @@ classdef HeatMapAnimator < Animator
     %Tips: Press 'z' to flip between zscored and non zscored image.  
     properties (Access = private)
         statusMsg = 'HeatMapAnimator:\nFrame: %d\nframeRate: %d\n';
-        viewingWindow = -5:5
         LineWidth = 3
     end
     
@@ -45,6 +44,7 @@ classdef HeatMapAnimator < Animator
         X
         I
         c
+        viewingWindow = -5:5
         means
         stds
         img
