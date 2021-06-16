@@ -211,6 +211,36 @@ classdef (Abstract) Animator < FlexChart
                 write_frames(V,savePath,varargin{:}); 
             end
         end
+        
+        function play(obj, frameIds)
+            %play - play an Animator movie
+            %
+            %   Syntax: Animator.play(frameIds);
+            %
+            %   Inputs: frameIds - frames to play
+            
+            % Find all of the linked Animators
+            linkedAnimators = obj.links;
+            if (numel(linkedAnimators) == 1) && (~iscell(linkedAnimators))
+                linkedAnimators = {linkedAnimators};
+            end
+            if isempty(linkedAnimators)
+                linkedAnimators = cell(1);
+                linkedAnimators{1} = obj;
+            end
+            tic
+            % Iterate through frames, update each Animator
+            origFrame = linkedAnimators{1}.frame;
+            for nFrame = 1:numel(frameIds)
+                % Sometimes you might want to change this syntax if you've
+                % restricted frames via Animator.restrict.
+                for nAnimator = 1:numel(linkedAnimators)
+                    linkedAnimators{nAnimator}.frame = frameIds(nFrame);
+                    
+                end
+                drawnow;
+            end
+        end
     end
     
     methods (Abstract, Access = protected)
