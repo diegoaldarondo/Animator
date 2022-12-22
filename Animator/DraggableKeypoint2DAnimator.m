@@ -49,6 +49,7 @@ classdef DraggableKeypoint2DAnimator < Animator
         points
         selectedNode
         selectedNodePosition
+        dragged
         visibleDragPoints = false
     end
     
@@ -71,6 +72,7 @@ classdef DraggableKeypoint2DAnimator < Animator
             validateattributes(markers,{'numeric'},{'3d'})
             validateattributes(skeleton,{'struct'},{})
             obj.markers = markers;
+            obj.dragged = false(size(obj.markers,1), size(markers,3));
             obj.skeleton = skeleton;
             obj.color = obj.skeleton.color;
             obj.joints = obj.skeleton.joints_idx;
@@ -167,6 +169,7 @@ classdef DraggableKeypoint2DAnimator < Animator
         function clickmarker(obj, src, ev)
             % Handle clicks on markers by turning on dragging mode. 
             obj.selectedNode = obj.getSelectedNode(src);
+            obj.dragged(obj.frameInds(obj.frame), obj.selectedNode) = true;
             set(ancestor(src,'figure'),'windowbuttonmotionfcn',{@obj.dragmarker,src})
             set(ancestor(src,'figure'),'windowbuttonupfcn',@obj.stopdragging)
         end
@@ -207,6 +210,7 @@ classdef DraggableKeypoint2DAnimator < Animator
             y_new(obj.selectedNode)=coords(1,2,1);
             %update plot
             set(src,'xdata',x_new,'ydata',y_new);
+            obj.dragged(obj.frameInds(obj.frame), obj.selectedNode) = true;
             obj.update()
         end
         
@@ -231,6 +235,7 @@ classdef DraggableKeypoint2DAnimator < Animator
             obj.markersY = obj.markers(:,2,:);
             obj.points.XData = squeeze(obj.markers(f,1,:));
             obj.points.YData = squeeze(obj.markers(f,2,:));
+            obj.dragged(f, :) = false;
             obj.update();
         end
         
@@ -238,6 +243,7 @@ classdef DraggableKeypoint2DAnimator < Animator
             obj.points.XData(obj.selectedNode) = nan;
             obj.points.YData(obj.selectedNode) = nan;
             obj.stopdragging(obj.Parent,[]);
+            obj.dragged(obj.frameInds(obj.frame), obj.selectedNode) = false;
             obj.update();
         end
         

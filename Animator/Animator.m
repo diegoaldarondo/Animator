@@ -177,6 +177,7 @@ classdef (Abstract) Animator < FlexChart
                 % restricted frames via Animator.restrict.
                 for nAnimator = 1:numel(linkedAnimators)
                     linkedAnimators{nAnimator}.frame = frameIds(nFrame);
+%                     linkedAnimators{nAnimator}.frame = linkedAnimators{nAnimator}.frame + 1;
                 end
 %                 for nAnimator = 1:numel(linkedAnimators)
 % %                     linkedAnimators{nAnimator}.frame = linkedAnimators{nAnimator}.frame+1;
