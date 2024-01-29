@@ -30,6 +30,7 @@ This file is part of mmread.
 extern "C" {
 	#include <avbin.h>
 	#include <libavformat/avformat.h>
+	#include <libavcodec/avcodec.h>
 
 	struct _AVbinFile {
 	    AVFormatContext *context;
@@ -521,8 +522,7 @@ void FFGrabber::runMatlabCommand(Grabber* G)
 		int width=G->info.video.width, height = G->info.video.height;
 		mxArray* plhs[] = {NULL};
 		int ExitCode;
-
-		mexSetTrapFlag(0);
+		
 
 		if (G->frames.size() == 0) return;
 		vector<uint8_t*>::iterator lastframe = --(G->frames.end());
@@ -715,7 +715,7 @@ int FFGrabber::doCapture()
 #ifdef MATLAB_MEX_FILE
 FFGrabber FFG;
 
-char* message(int err)
+const char* message(int err)
 {
 	switch (err)
 	{
@@ -754,14 +754,14 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 			format = NULL;
 		}
 
-		char* errmsg =  message(FFG.build(filename, format, mxGetScalar(prhs[3]), mxGetScalar(prhs[4]), mxGetScalar(prhs[5])));
+		const char* errmsg =  message(FFG.build(filename, format, mxGetScalar(prhs[3]), mxGetScalar(prhs[4]), mxGetScalar(prhs[5])));
 		delete[] format;
 		delete[] filename;
 
 		if (strcmp("",errmsg)) mexErrMsgTxt(errmsg);
 	} else if (!strcmp("doCapture",cmd)) {
 		if (nlhs > 0) mexErrMsgTxt("doCapture: there are no outputs");
-		char* errmsg =  message(FFG.doCapture());
+		const char* errmsg =  message(FFG.doCapture());
 		if (strcmp("",errmsg)) mexErrMsgTxt(errmsg);
 	} else if (!strcmp("getVideoInfo",cmd)) {
 		if (nrhs < 2 || !mxIsNumeric(prhs[1])) mexErrMsgTxt("getVideoInfo: second parameter must be the video stream id (as a number)");
@@ -770,7 +770,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 		unsigned int id = (unsigned int)mxGetScalar(prhs[1]);
 		int width,height,nrFramesCaptured,nrFramesTotal;
 		double rate, totalDuration;
-		char* errmsg =  message(FFG.getVideoInfo(id, &width, &height,&rate, &nrFramesCaptured, &nrFramesTotal, &totalDuration));
+		const char* errmsg =  message(FFG.getVideoInfo(id, &width, &height,&rate, &nrFramesCaptured, &nrFramesTotal, &totalDuration));
 
 		if (strcmp("",errmsg)) mexErrMsgTxt(errmsg);
 
@@ -787,7 +787,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 		unsigned int id = (unsigned int)mxGetScalar(prhs[1]);
 		int nrChannels,bits,nrFramesCaptured,nrFramesTotal,subtype;
 		double rate, totalDuration;
-		char* errmsg =  message(FFG.getAudioInfo(id, &nrChannels, &rate, &bits, &nrFramesCaptured, &nrFramesTotal, &subtype, &totalDuration));
+		const char* errmsg =  message(FFG.getAudioInfo(id, &nrChannels, &rate, &bits, &nrFramesCaptured, &nrFramesTotal, &subtype, &totalDuration));
 
 		if (strcmp("",errmsg)) mexErrMsgTxt(errmsg);
 
@@ -817,7 +817,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 		double time;
 		mwSize dims[2];
 		dims[1]=1;
-		char* errmsg =  message(FFG.getVideoFrame(id, frameNr, &data, &nrBytes, &time));
+		const char* errmsg =  message(FFG.getVideoFrame(id, frameNr, &data, &nrBytes, &time));
 
 		if (strcmp("",errmsg)) mexErrMsgTxt(errmsg);
 
@@ -838,7 +838,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 		mwSize dims[2];
 		dims[1]=1;
 		mxClassID mxClass;
-		char* errmsg =  message(FFG.getAudioFrame(id, frameNr, &data, &nrBytes, &time));
+		const char* errmsg =  message(FFG.getAudioFrame(id, frameNr, &data, &nrBytes, &time));
 
 		if (strcmp("",errmsg)) mexErrMsgTxt(errmsg);
 
