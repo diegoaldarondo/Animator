@@ -94,7 +94,7 @@ classdef VideoAnimator < Animator
     
     methods (Access = protected)
         function update(obj)
-            obj.checkVisible
+            obj.checkVisible()
             set(obj.img,'CData',obj.V(:,:,:,  obj.frameInds(obj.frame)));
         end
     end

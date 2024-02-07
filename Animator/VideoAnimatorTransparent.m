@@ -25,7 +25,7 @@ classdef VideoAnimatorTransparent < VideoAnimator
     end
     methods (Access = protected)
         function update(obj)
-            obj.checkVisible
+            obj.checkVisible()
             im = obj.V(:,:,:,  obj.frameInds(obj.frame));
             im(im < 20) = 0;
             if size(obj.V,3) == 3                

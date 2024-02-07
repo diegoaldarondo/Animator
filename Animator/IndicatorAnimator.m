@@ -78,7 +78,7 @@ classdef IndicatorAnimator < Animator
     
     methods (Access = protected)
         function update(obj)
-            obj.checkVisible
+            obj.checkVisible()
             if obj.logic(obj.frameInds(obj.frame))
                 set(obj.Patch, 'FaceAlpha', .5)
             else

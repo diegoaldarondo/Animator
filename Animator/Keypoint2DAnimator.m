@@ -60,82 +60,82 @@ classdef Keypoint2DAnimator < Animator
             [animatorArgs, ~, varargin] = parseClassArgs('Animator', varargin{:});
             obj@Animator(animatorArgs{:});
             % Check inputs
-            validateattributes(markers,{'numeric'},{'3d'})
-            validateattributes(skeleton,{'struct'},{})
+            validateattributes(markers, {'numeric'}, {'3d'})
+            validateattributes(skeleton, {'struct'}, {})
             obj.markers = markers;
             obj.skeleton = skeleton;
             obj.color = obj.skeleton.color;
             obj.joints = obj.skeleton.joints_idx;
-            validateattributes(obj.joints,{'numeric'},{'positive'})
-            validateattributes(obj.color,{'numeric'},{'nonnegative'})
-            if max(max(obj.joints)) > size(obj.markers,3)
+            validateattributes(obj.joints, {'numeric'}, {'positive'})
+            validateattributes(obj.color, {'numeric'}, {'nonnegative'})
+            if max(max(obj.joints)) > size(obj.markers, 3)
                 error('Invalid joints_idx: Idx exceeds number of markers');
             end
-            if size(obj.color, 1) ~= size(obj.joints,1)
+            if size(obj.color, 1) ~= size(obj.joints, 1)
                 error('Number of colors and number of segments do not match');
             end
             
             % User defined inputs
             if ~isempty(varargin)
-                set(obj,varargin{:});
+                set(obj, varargin{:});
             end
             
             % Private constructions
-            obj.nFrames = size(obj.markers,1);
+            obj.nFrames = size(obj.markers, 1);
             obj.frameInds = 1:obj.nFrames;
-            obj.markersX = obj.markers(:,1,:);
-            obj.markersY = obj.markers(:,2,:);
-            obj.nMarkers = size(obj.markers,3);
+            obj.markersX = obj.markers(:, 1, :);
+            obj.markersY = obj.markers(:, 2, :);
+            obj.nMarkers = size(obj.markers, 3);
             
             % Get color groups
-            [colors,~,cIds] = unique(obj.color,'rows');
+            [colors, ~, cIds] = unique(obj.color, 'rows');
             [~, MaxNNodes] = mode(cIds);
             
             % Get the first frames marker positions
-            curX = obj.markersX(obj.frameInds(obj.frame),:);
-            curY = obj.markersY(obj.frameInds(obj.frame),:);
+            curX = obj.markersX(obj.frameInds(obj.frame), :);
+            curY = obj.markersY(obj.frameInds(obj.frame), :);
             curX = curX(obj.joints)';
             curY = curY(obj.joints)';
             
             %%% Very fast updating procedure with low level graphics. 
             % Concatenate with nans between segment ends to represent all 
             % segments with the same color as one single line object
-            catnanX = cat(1,curX,nan(1,size(curX,2)));
-            catnanY = cat(1,curY,nan(1,size(curY,2)));
+            catnanX = cat(1, curX, nan(1, size(curX, 2)));
+            catnanY = cat(1, curY, nan(1, size(curY, 2)));
             
             % Put into array for vectorized graphics initialization
-            nanedXVec = nan(MaxNNodes*2,size(colors,1));
-            nanedYVec = nan(MaxNNodes*2,size(colors,1));
-            for nColor = 1:size(colors,1)
-                nanedXVec(1:numel(catnanX(:,cIds==nColor)),nColor) = reshape(catnanX(:,cIds==nColor),[],1);
-                nanedYVec(1:numel(catnanY(:,cIds==nColor)),nColor) = reshape(catnanY(:,cIds==nColor),[],1);
+            nanedXVec = nan(MaxNNodes*2, size(colors, 1));
+            nanedYVec = nan(MaxNNodes*2, size(colors, 1));
+            for nColor = 1:size(colors, 1)
+                nanedXVec(1:numel(catnanX(:, cIds==nColor)), nColor) = reshape(catnanX(:, cIds==nColor), [], 1);
+                nanedYVec(1:numel(catnanY(:, cIds==nColor)), nColor) = reshape(catnanY(:, cIds==nColor), [], 1);
             end
             
             % Build line objects and set final properties
-            obj.PlotSegments = line(obj.Axes,...
-                nanedXVec,...
-                nanedYVec,...
-                'LineStyle','-',...
-                'Marker','.',...
-                'MarkerSize',obj.MarkerSize,...
-                'LineWidth',obj.LineWidth);
-            set(obj.PlotSegments, {'color'}, mat2cell(colors,ones(size(colors,1),1)));
+            obj.PlotSegments = line(obj.Axes, ...
+                nanedXVec, ...
+                nanedYVec, ...
+                'LineStyle', '-', ...
+                'Marker', '.', ...
+                'MarkerSize', obj.MarkerSize, ...
+                'LineWidth', obj.LineWidth);
+            set(obj.PlotSegments, {'color'}, mat2cell(colors, ones(size(colors, 1), 1)));
         end
         
         function restrict(obj, newFrames)
             %restrict - restricts animation to a subset of frames
-            obj.markersX = obj.markers(newFrames,1,:);
-            obj.markersY = obj.markers(newFrames,2,:);
+            obj.markersX = obj.markers(newFrames, 1, :);
+            obj.markersY = obj.markers(newFrames, 2, :);
             restrict@Animator(obj, newFrames);
         end
         
         
-        function keyPressCallback(obj,source,eventdata)
+        function keyPressCallback(obj, source, eventdata)
             % keyPressCallback - Handle UI
             % Extends Animator callback function
             
             % Extend Animator callback function
-            keyPressCallback@Animator(obj,source,eventdata);
+            keyPressCallback@Animator(obj, source, eventdata);
             
             % determine the key that was pressed
             keyPressed = eventdata.Key;
@@ -144,8 +144,8 @@ classdef Keypoint2DAnimator < Animator
                     message = obj(1).instructions;
                     fprintf(message);
                 case 's'
-                    fprintf(obj(1).statusMsg,...
-                        obj(1).frameInds(obj(1).frame),obj(1).frameRate);
+                    fprintf(obj(1).statusMsg, ...
+                        obj(1).frameInds(obj(1).frame), obj(1).frameRate);
                 case 'r'
                     reset(obj);
             end
@@ -154,42 +154,42 @@ classdef Keypoint2DAnimator < Animator
     
     methods (Access = private)
         function reset(obj)
-            restrict(obj, 1:size(obj.markers,1))
+            restrict(obj, 1:size(obj.markers, 1))
         end
     end
     
     
     methods (Access = protected)
         function update(obj)
-            obj.checkVisible
+            obj.checkVisible()
             % Find color groups
-            [colors,~,cIds] = unique(obj.color,'rows');
+            [colors, ~, cIds] = unique(obj.color, 'rows');
             
             % Get the joints for the current frame
-            curX = obj.markersX(obj.frameInds(obj.frame),:);
-            curY = obj.markersY(obj.frameInds(obj.frame),:);
+            curX = obj.markersX(obj.frameInds(obj.frame), :);
+            curY = obj.markersY(obj.frameInds(obj.frame), :);
             curX = curX(obj.joints)';
             curY = curY(obj.joints)';
             
             %%% Very fast updating procedure with low level graphics. 
             % Concatenate with nans between segment ends to represent all 
             % segments with the same color as one single line object
-            catnanX = cat(1,curX,nan(1,size(curX,2)));
-            catnanY = cat(1,curY,nan(1,size(curY,2)));
+            catnanX = cat(1, curX, nan(1, size(curX, 2)));
+            catnanY = cat(1, curY, nan(1, size(curY, 2)));
             
             % Put into cell for vectorized graphics update
-            nanedXVec = cell(size(colors,1),1);
-            nanedYVec = cell(size(colors,1),1);
-            for i = 1:size(colors,1)
-                nanedXVec{i} = reshape(catnanX(:,cIds==i),[],1);
-                nanedYVec{i} = reshape(catnanY(:,cIds==i),[],1);
+            nanedXVec = cell(size(colors, 1), 1);
+            nanedYVec = cell(size(colors, 1), 1);
+            for i = 1:size(colors, 1)
+                nanedXVec{i} = reshape(catnanX(:, cIds==i), [], 1);
+                nanedYVec{i} = reshape(catnanY(:, cIds==i), [], 1);
             end
             
             % Update the values
             valueArray = cat(2, nanedXVec, nanedYVec);
-            nameArray = {'XData','YData'};
+            nameArray = {'XData', 'YData'};
             segments = obj.PlotSegments;
-            set(segments,nameArray,valueArray)
+            set(segments, nameArray, valueArray)
         end
     end
 end

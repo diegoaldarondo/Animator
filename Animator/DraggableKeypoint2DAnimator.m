@@ -69,73 +69,73 @@ classdef DraggableKeypoint2DAnimator < Animator
             obj@Animator(animatorArgs{:});
 
             % Check inputs
-            validateattributes(markers,{'numeric'},{'3d'})
-            validateattributes(skeleton,{'struct'},{})
+            validateattributes(markers, {'numeric'}, {'3d'})
+            validateattributes(skeleton, {'struct'}, {})
             obj.markers = markers;
-            obj.dragged = false(size(obj.markers,1), size(markers,3));
+            obj.dragged = false(size(obj.markers, 1), size(markers, 3));
             obj.skeleton = skeleton;
             obj.color = obj.skeleton.color;
             obj.joints = obj.skeleton.joints_idx;
-            validateattributes(obj.joints,{'numeric'},{'positive'})
-            validateattributes(obj.color,{'numeric'},{'nonnegative'})
-            if max(max(obj.joints)) > size(obj.markers,3)
+            validateattributes(obj.joints, {'numeric'}, {'positive'})
+            validateattributes(obj.color, {'numeric'}, {'nonnegative'})
+            if max(max(obj.joints)) > size(obj.markers, 3)
                 error('Invalid joints_idx: Idx exceeds number of markers');
             end
-            if size(obj.color, 1) ~= size(obj.joints,1)
+            if size(obj.color, 1) ~= size(obj.joints, 1)
                 error('Number of colors and number of segments do not match');
             end
 
             % User defined inputs
             if ~isempty(varargin)
-                set(obj,varargin{:});
+                set(obj, varargin{:});
             end
             obj.origMarkers = obj.markers;
             
             % Private constructions
-            obj.nFrames = size(obj.markers,1);
+            obj.nFrames = size(obj.markers, 1);
             obj.frameInds = 1:obj.nFrames;
-            obj.markersX = obj.markers(:,1,:);
-            obj.markersY = obj.markers(:,2,:);
-            obj.nMarkers = size(obj.markers,3);
+            obj.markersX = obj.markers(:, 1, :);
+            obj.markersY = obj.markers(:, 2, :);
+            obj.nMarkers = size(obj.markers, 3);
             
             % Get color groups
-            [colors,~,cIds] = unique(obj.color,'rows');
+            [colors, ~, cIds] = unique(obj.color, 'rows');
             [~, MaxNNodes] = mode(cIds);
             
             % Get the first frames marker positions
-            curX = obj.markersX(obj.frameInds(obj.frame),:);
-            curY = obj.markersY(obj.frameInds(obj.frame),:);
+            curX = obj.markersX(obj.frameInds(obj.frame), :);
+            curY = obj.markersY(obj.frameInds(obj.frame), :);
             curX = curX(obj.joints)';
             curY = curY(obj.joints)';
             
             %%% Very fast updating procedure with low level graphics.
             % Concatenate with nans between segment ends to represent all
             % segments with the same color as one single line object
-            catnanX = cat(1,curX,nan(1,size(curX,2)));
-            catnanY = cat(1,curY,nan(1,size(curY,2)));
+            catnanX = cat(1, curX, nan(1, size(curX, 2)));
+            catnanY = cat(1, curY, nan(1, size(curY, 2)));
             
             % Put into array for vectorized graphics initialization
-            nanedXVec = nan(MaxNNodes*2,size(colors,1));
-            nanedYVec = nan(MaxNNodes*2,size(colors,1));
-            for nColor = 1:size(colors,1)
-                nanedXVec(1:numel(catnanX(:,cIds==nColor)),nColor) = reshape(catnanX(:,cIds==nColor),[],1);
-                nanedYVec(1:numel(catnanY(:,cIds==nColor)),nColor) = reshape(catnanY(:,cIds==nColor),[],1);
+            nanedXVec = nan(MaxNNodes*2, size(colors, 1));
+            nanedYVec = nan(MaxNNodes*2, size(colors, 1));
+            for nColor = 1:size(colors, 1)
+                nanedXVec(1:numel(catnanX(:, cIds==nColor)), nColor) = reshape(catnanX(:, cIds==nColor), [], 1);
+                nanedYVec(1:numel(catnanY(:, cIds==nColor)), nColor) = reshape(catnanY(:, cIds==nColor), [], 1);
             end
-            obj.PlotSegments = line(obj.Axes,...
-                nanedXVec,...
-                nanedYVec,...
-                'LineStyle','-',...
-                'Marker','.',...
-                'MarkerSize',obj.MarkerSize,...
-                'LineWidth',obj.LineWidth,'HitTest','off');
-            set(obj.PlotSegments, {'color'}, mat2cell(colors,ones(size(colors,1),1)));
+            obj.PlotSegments = line(obj.Axes, ...
+                nanedXVec, ...
+                nanedYVec, ...
+                'LineStyle', '-', ...
+                'Marker', '.', ...
+                'MarkerSize', obj.MarkerSize, ...
+                'LineWidth', obj.LineWidth, 'HitTest', 'off');
+            set(obj.PlotSegments, {'color'}, mat2cell(colors, ones(size(colors, 1), 1)));
             
             % This sets up a trick to lock draggable points to multiple
             % colored lines.
-            frameX = obj.markersX(obj.frameInds(obj.frame),:);
-            frameY = obj.markersY(obj.frameInds(obj.frame),:);
-            obj.points = obj.dragpoints(obj.Axes, frameX, frameY,...
-                'LineStyle', 'none','LineWidth',1, 'Marker', '.', 'MarkerSize',...
+            frameX = obj.markersX(obj.frameInds(obj.frame), :);
+            frameY = obj.markersY(obj.frameInds(obj.frame), :);
+            obj.points = obj.dragpoints(obj.Axes, frameX, frameY, ...
+                'LineStyle', 'none', 'LineWidth', 1, 'Marker', '.', 'MarkerSize', ...
                 20, 'Color', obj.DragPointColor);
             ax = handle(obj.Axes);
             disableDefaultInteractivity(ax)
@@ -144,8 +144,8 @@ classdef DraggableKeypoint2DAnimator < Animator
         
         function restrict(obj, newFrames)
             %restrict - restricts animation to a subset of frames
-            obj.markersX = obj.markers(newFrames,1,:);
-            obj.markersY = obj.markers(newFrames,2,:);
+            obj.markersX = obj.markers(newFrames, 1, :);
+            obj.markersY = obj.markers(newFrames, 2, :);
             restrict@Animator(obj, newFrames);
         end
         
@@ -160,8 +160,8 @@ classdef DraggableKeypoint2DAnimator < Animator
             % Create invisible draggable plotting points to act as anchors
             % for multicolor lines. 
             % Consider reimplementing with draggable()
-            lines = line(ax, x,y,'hittest','on','buttondownfcn',...
-                @obj.clickmarker,'PickableParts','all','Visible',obj.visibleDragPoints,...
+            lines = line(ax, x, y, 'hittest', 'on', 'buttondownfcn', ...
+                @obj.clickmarker, 'PickableParts', 'all', 'Visible', obj.visibleDragPoints, ...
                 varargin{:});
             
         end
@@ -170,8 +170,8 @@ classdef DraggableKeypoint2DAnimator < Animator
             % Handle clicks on markers by turning on dragging mode. 
             obj.selectedNode = obj.getSelectedNode(src);
             obj.dragged(obj.frameInds(obj.frame), obj.selectedNode) = true;
-            set(ancestor(src,'figure'),'windowbuttonmotionfcn',{@obj.dragmarker,src})
-            set(ancestor(src,'figure'),'windowbuttonupfcn',@obj.stopdragging)
+            set(ancestor(src, 'figure'), 'windowbuttonmotionfcn', {@obj.dragmarker, src})
+            set(ancestor(src, 'figure'), 'windowbuttonupfcn', @obj.stopdragging)
         end
         
         function deleteDataTips(obj)
@@ -186,7 +186,7 @@ classdef DraggableKeypoint2DAnimator < Animator
             
             % Get current axes and coords
             h1=gca;
-            coords=get(h1,'currentpoint');
+            coords=get(h1, 'currentpoint');
             
             % Get all x and y data
             x=src.XData;
@@ -194,34 +194,34 @@ classdef DraggableKeypoint2DAnimator < Animator
             
             
             % Check which data point has the smallest distance to the dragged point
-            x_diff = abs(x-coords(1,1,1));
-            y_diff = abs(y-coords(1,2,1));
+            x_diff = abs(x-coords(1, 1, 1));
+            y_diff = abs(y-coords(1, 2, 1));
             [~, index] = min(sqrt(x_diff.^2+y_diff.^2));
             obj.selectedNodePosition = [x(index), y(index)];
         end
         
-        function dragmarker(obj, fig, ev,src)
+        function dragmarker(obj, fig, ev, src)
             % Create new x and y data and exchange coords for the dragged point
             h1=gca;
-            coords=get(h1,'currentpoint');
+            coords=get(h1, 'currentpoint');
             x_new=src.XData;
             y_new=src.YData;
-            x_new(obj.selectedNode)=coords(1,1,1);
-            y_new(obj.selectedNode)=coords(1,2,1);
+            x_new(obj.selectedNode)=coords(1, 1, 1);
+            y_new(obj.selectedNode)=coords(1, 2, 1);
             %update plot
-            set(src,'xdata',x_new,'ydata',y_new);
+            set(src, 'xdata', x_new, 'ydata', y_new);
             obj.dragged(obj.frameInds(obj.frame), obj.selectedNode) = true;
             obj.update()
         end
         
-        function stopdragging(obj,fig,ev)
+        function stopdragging(obj, fig, ev)
             % Stop dragging mode
-            set(fig,'windowbuttonmotionfcn','')
-            set(fig,'windowbuttonupfcn','')
+            set(fig, 'windowbuttonmotionfcn', '')
+            set(fig, 'windowbuttonupfcn', '')
 
             % Run the figure's windowKeyPress fcn to allow for syncing
             E.Key = 'temp';
-            fig.WindowKeyPressFcn([],E)
+            fig.WindowKeyPressFcn([], E)
             
             obj.selectedNode = nan;
             obj.selectedNodePosition = [];
@@ -230,11 +230,11 @@ classdef DraggableKeypoint2DAnimator < Animator
         function resetFrame(obj)
             % Reset the frame to the original positions of markers. 
             f = obj.frameInds(obj.frame);
-            obj.markers(f,:,:) = obj.origMarkers(f,:,:);
-            obj.markersX = obj.markers(:,1,:);
-            obj.markersY = obj.markers(:,2,:);
-            obj.points.XData = squeeze(obj.markers(f,1,:));
-            obj.points.YData = squeeze(obj.markers(f,2,:));
+            obj.markers(f, :, :) = obj.origMarkers(f, :, :);
+            obj.markersX = obj.markers(:, 1, :);
+            obj.markersY = obj.markers(:, 2, :);
+            obj.points.XData = squeeze(obj.markers(f, 1, :));
+            obj.points.YData = squeeze(obj.markers(f, 2, :));
             obj.dragged(f, :) = false;
             obj.update();
         end
@@ -242,17 +242,17 @@ classdef DraggableKeypoint2DAnimator < Animator
         function deleteSelectedNode(obj)
             obj.points.XData(obj.selectedNode) = nan;
             obj.points.YData(obj.selectedNode) = nan;
-            obj.stopdragging(obj.Parent,[]);
+            obj.stopdragging(obj.Parent, []);
             obj.dragged(obj.frameInds(obj.frame), obj.selectedNode) = false;
             obj.update();
         end
         
-        function keyPressCallback(obj,source,eventdata)
+        function keyPressCallback(obj, source, eventdata)
             % keyPressCallback - Handle UI
             % Extends Animator callback function
             
             % Extend Animator callback function
-            keyPressCallback@Animator(obj,source,eventdata);
+            keyPressCallback@Animator(obj, source, eventdata);
             
             % determine the key that was pressed
             keyPressed = eventdata.Key;
@@ -268,15 +268,15 @@ classdef DraggableKeypoint2DAnimator < Animator
     
     methods (Access = private)
         function reset(obj)
-            restrict(obj, 1:size(obj.markers,1))
+            restrict(obj, 1:size(obj.markers, 1))
         end
     end
     
     methods (Access = protected)
         function update(obj)
-            obj.checkVisible
+            obj.checkVisible()
             % Find color groups
-            [colors,~,cIds] = unique(obj.color,'rows');
+            [colors, ~, cIds] = unique(obj.color, 'rows');
             
             curFrame = obj.getCurrentFramePositions();
             
@@ -289,22 +289,22 @@ classdef DraggableKeypoint2DAnimator < Animator
             %%% Very fast updating procedure with low level graphics.
             % Concatenate with nans between segment ends to represent all
             % segments with the same color as one single line object
-            catnanX = cat(1,curX,nan(1,size(curX,2)));
-            catnanY = cat(1,curY,nan(1,size(curY,2)));
+            catnanX = cat(1, curX, nan(1, size(curX, 2)));
+            catnanY = cat(1, curY, nan(1, size(curY, 2)));
             
             % Put into cell for vectorized graphics update
-            nanedXVec = cell(size(colors,1),1);
-            nanedYVec = cell(size(colors,1),1);
-            for i = 1:size(colors,1)
-                nanedXVec{i} = reshape(catnanX(:,cIds==i),[],1);
-                nanedYVec{i} = reshape(catnanY(:,cIds==i),[],1);
+            nanedXVec = cell(size(colors, 1), 1);
+            nanedYVec = cell(size(colors, 1), 1);
+            for i = 1:size(colors, 1)
+                nanedXVec{i} = reshape(catnanX(:, cIds==i), [], 1);
+                nanedYVec{i} = reshape(catnanY(:, cIds==i), [], 1);
             end
             
             % Update the values
             valueArray = cat(2, nanedXVec, nanedYVec);
-            nameArray = {'XData','YData'};
+            nameArray = {'XData', 'YData'};
             segments = obj.PlotSegments;
-            set(segments,nameArray,valueArray)
+            set(segments, nameArray, valueArray)
         end
     end
 end

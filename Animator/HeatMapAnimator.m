@@ -190,7 +190,7 @@ classdef HeatMapAnimator < Animator
     
     methods (Access = protected)
         function update(obj)
-            obj.checkVisible
+            obj.checkVisible()
             lims = [min(obj.frameInds(obj.frame)+obj.viewingWindow) max(obj.frameInds(obj.frame)+obj.viewingWindow)];
             set(obj.Axes, 'XLim', lims)
             set(obj.centerLine,'XData',[obj.frameInds(obj.frame) obj.frameInds(obj.frame)],'YData', get(obj.Axes,'YLim'));

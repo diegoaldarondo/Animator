@@ -84,7 +84,7 @@ classdef SpikeRasterAnimator < Animator
     
     methods (Access = protected)
         function update(obj)
-            obj.checkVisible
+            obj.checkVisible()
             lims = [min(obj.frameTimes(obj.frame)+obj.viewingWindow) max(obj.frameTimes(obj.frame)+obj.viewingWindow)];
             set(obj.centerLine,'XData',obj.frameTimes([obj.frame obj.frame]),'YData', get(gca,'YLim'));
             set(obj.Axes, 'XLim', lims)

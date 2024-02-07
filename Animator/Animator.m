@@ -38,7 +38,8 @@ classdef (Abstract) Animator < FlexChart
         frameRate = 1;
         frame = 1;
         id
-        isVisible
+        isVisible % UNUSED - REMOVE? vector representing visiblity of current frame
+        % isVisible appears to never be updated - probably remove
         scope
         links
         speedUp = 10;
@@ -55,19 +56,19 @@ classdef (Abstract) Animator < FlexChart
             
             % User defined inputs
             if ~isempty(varargin)
-                set(obj,varargin{:});
+                set(obj, varargin{:});
             end
             
             % Set up the figure and callback function
             obj.Parent = gcf;
             addToolbarExplorationButtons(gcf);
-            set(obj.Parent,'WindowKeyPressFcn',...
-                @(src,event) keyPressCallback(obj,src,event));
+            set(obj.Parent, 'WindowKeyPressFcn', ...
+                @(src, event) keyPressCallback(obj, src, event));
             
             % Set up the axes
-            hold(obj.Axes,'on');
+            hold(obj.Axes, 'on');
             obj.Axes.DeleteFcn = @obj.onAxesDeleted;
-            set(obj.Axes,'Units','normalized');
+            set(obj.Axes, 'Units', 'normalized');
         end
         
         function delete(obj)
@@ -78,12 +79,15 @@ classdef (Abstract) Animator < FlexChart
             axes = obj.Axes;
         end
         
+        % NOTE: you need to reimplement get.prop(obj) if you reimplement set.prop(obj)
         function frame = get.frame( obj )
             frame = obj.frame;
         end % get.frame
         
         function set.frame( obj, newFrame )
-            obj.frame = mod(newFrame,obj.nFrames);
+            % Set frame, but loop around before or after (adjust for 0 = nFrames)
+            % also re-render the screen
+            obj.frame = mod(newFrame, obj.nFrames);
             obj.frame(obj.frame==0) = obj.nFrames;
             update(obj)
         end % set.frame
@@ -93,6 +97,7 @@ classdef (Abstract) Animator < FlexChart
         end % get.frame
         
         function set.frameRate( obj, newframeRate )
+            %  update frame rate, but do not allow rate to go <1
             obj.frameRate = newframeRate;
             if obj.frameRate < 1
                 obj.frameRate = 1;
@@ -104,6 +109,8 @@ classdef (Abstract) Animator < FlexChart
         end
         
         function restrict(obj, newFrames)
+            % change frameInds to a new vector (e.g. a subset range)
+            % also update nFrames and reset frame number to 1
             obj.frameInds = newFrames;
             obj.nFrames = numel(newFrames);
             obj.frame = 1;
@@ -124,16 +131,21 @@ classdef (Abstract) Animator < FlexChart
                     obj.frameRate = obj.frameRate + obj.speedUp;
                 case 'downarrow'
                     obj.frameRate = obj.frameRate - obj.speedUp;
-                case {'1','2','3','4','5','6','7','8','9'}
+                case {'1', '2', '3', '4', '5', '6', '7', '8', '9'}
                     val = str2double(keyPressed);
                     obj.scope = val;
                     fprintf('Scope is Animation %d\n', val);
             end
-            set(obj.Axes.Parent ,'NumberTitle','off',...
-                'Name',sprintf('Frame: %d',obj.frameInds(obj.frame(1))));
+            set(obj.Axes.Parent , 'NumberTitle', 'off', ...
+                'Name', sprintf('Frame: %d', obj.frameInds(obj.frame(1))));
         end
         
         function checkVisible(obj)
+            % check if the current frame is visible in the isVisible vector
+            % and update the current axes & axes.children to that value
+            % Typically run inside subclass's `obj.update` method (i.e. every rerender)
+
+            % NOTE: this is probably NEVER RUN since isVisible is never changed from the uninitialized value: []
             if ~isempty(obj.isVisible)
                 vis = obj.isVisible(obj.frameInds(obj.frame));
                 arrayfun(@(X) set(X, 'Visible', vis), obj.Axes.Children)
@@ -143,10 +155,11 @@ classdef (Abstract) Animator < FlexChart
     end
     
     methods
+        % video-related methods: not used in Label3D
         function V = writeVideo(obj, frameIds, savePath, varargin)
             %writeMovie - write an Animator movie
             %
-            %   Syntax: Animator.writeMovie(frameIds,savePath,'FPS',30);
+            %   Syntax: Animator.writeMovie(frameIds, savePath, 'FPS', 30);
             %
             %   Inputs: frameIds - frames to write
             %           savePath - path to save movie
@@ -167,7 +180,7 @@ classdef (Abstract) Animator < FlexChart
                 linkedAnimators = cell(1);
                 linkedAnimators{1} = obj;
             end
-            V = cell(numel(frameIds),1);
+            V = cell(numel(frameIds), 1);
             tic
             % Iterate through frames, update each Animator, and get the
             % image.
@@ -191,25 +204,25 @@ classdef (Abstract) Animator < FlexChart
                 % Print out an estimate of rendering time.
                 if nFrame == 100
                     rate = 100/(toc);
-                    fprintf('Estimated time remaining: %f seconds\n',...
+                    fprintf('Estimated time remaining: %f seconds\n', ...
                         numel(frameIds)/rate)
                 end
             end
             % Aggregate the movie and write.
-            V = cat(4,V{:});
+            V = cat(4, V{:});
             fprintf('Writing movie to: %s\n', savePath);
             if strcmp(get_ext(savePath), '.gif')
-                for nFrame = 1:size(V,4)
-                    im = squeeze(V(:,:,:,nFrame));
-                    [imind,cm] = rgb2ind(im, 256);
+                for nFrame = 1:size(V, 4)
+                    im = squeeze(V(:, :, :, nFrame));
+                    [imind, cm] = rgb2ind(im, 256);
                     if nFrame == 1
-                        imwrite(imind, cm, savePath,'gif', 'Loopcount', inf, varargin{:});
+                        imwrite(imind, cm, savePath, 'gif', 'Loopcount', inf, varargin{:});
                     else
-                        imwrite(imind, cm, savePath,'gif','WriteMode','append', varargin{:});
+                        imwrite(imind, cm, savePath, 'gif', 'WriteMode', 'append', varargin{:});
                     end
                 end
             else
-                write_frames(V,savePath,varargin{:}); 
+                write_frames(V, savePath, varargin{:}); 
             end
         end
         
@@ -249,16 +262,24 @@ classdef (Abstract) Animator < FlexChart
     end
     
     methods (Static)
-        
         function linkAll(h)
+            % update the links list based on the obj.h variable
+            % and call each handle's (obj.h) "keyPressCallback" function
             for i = 1:numel(h)
                 h{i}.links = h;
             end
-            cellfun(@(X) set(X.Parent,'WindowKeyPressFcn',...
-                @(src,event) Animator.runAll(h,src,event)), h)
+            cellfun( ...
+                @(X) set( ...
+                    X.Parent, ...
+                    'WindowKeyPressFcn', ...
+                    @(src, event) Animator.runAll(h, src, event) ...
+                ), h)
         end
         
+        % NOTE: never used in Label3D
         function tileAnimators(h, varargin)
+            % position all animators specific by "h" (handle) 
+            % varargin = {pad}
             nAnimators = numel(h);
             pad = .05;
             if ~isempty(varargin)
@@ -268,22 +289,23 @@ classdef (Abstract) Animator < FlexChart
             starts = (1./nAnimators)*[0:(nAnimators-1)] + pad;
             for nAnimator = 1:nAnimators
                 ax = h{nAnimator}.getAxes();
-                set(ax, 'Position',[starts(nAnimator) pad w 1-2*pad])
+                % set position syntax: [left, bottom, width, height]
+                set(ax, 'Position', [starts(nAnimator) pad/2 w 1-2*pad])
             end
         end
         
-        function runAll(h,src,event)
+        function runAll(h, src, event)
             %runAll - iterate through the keyPressCallback function of all
             %Animators within a cell array.
             %
-            %   Syntax: runAll(h,src,event);
+            %   Syntax: runAll(h, src, event);
             %
             %   Notes: It is useful to assign this function as the
             %          WindowKeyPressFcn of a figure with multiple axes
             %          that listen for key presses.
             for i = 1:numel(h)
-                if isa(h{i},'Animator')
-                    keyPressCallback(h{i},src,event)
+                if isa(h{i}, 'Animator')
+                    h{i}.keyPressCallback(src, event)
                 end
             end
         end

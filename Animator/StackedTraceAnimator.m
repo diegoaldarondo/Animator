@@ -91,7 +91,7 @@ classdef StackedTraceAnimator < Animator
     
     methods (Access = protected)
         function update(obj)
-            obj.checkVisible
+            obj.checkVisible()
             lims = [min(obj.frameInds(obj.frame)+obj.viewingWindow) max(obj.frameInds(obj.frame)+obj.viewingWindow)];
             set(obj.centerLine,'XData',[obj.frame obj.frame],'YData', get(gca,'YLim'));
             set(obj.Axes, 'XLim', lims)
