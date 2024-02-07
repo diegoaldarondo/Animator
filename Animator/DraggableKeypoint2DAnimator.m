@@ -21,10 +21,10 @@ classdef DraggableKeypoint2DAnimator < Animator
     %   resetFrame - Reset frame to the original position. 
     %   keyPressCallback - handle UI
     properties (Access = private)
-        nMarkers
-        origMarkers
-        color
-        joints
+        nMarkers % # markers
+        origMarkers % Original positions of markers? SHAPE: (# frames, 2, # markers)
+        color % marker color, optionally provided by skeleton in constructor
+        joints % Adjacency list between markers. SHAPE: (# joints, 2)
         instructions = ['DraggableKeypoint2DAnimator Guide:\n'...
             'rightarrow: next frame\n' ...
             'leftarrow: previous frame\n' ...
@@ -41,16 +41,18 @@ classdef DraggableKeypoint2DAnimator < Animator
         MarkerSize = 20;
         DragPointColor = [1 1 1];
         LineWidth = 3;
-        markers
-        markersX
-        markersY
-        skeleton
-        PlotSegments
-        points
-        selectedNode
-        selectedNodePosition
-        dragged
-        visibleDragPoints = false
+        markers % x,y position of markers. SHAPE: (# frames, 2, # markers)
+        % NOTE: Why are there seperate x and y position arrays? why not just pull from markers
+        markersX % x positions: SHAPE (# frames, 1, #markers)
+        markersY % y positions: SHAPE (# frames, 1, #markers)
+        skeleton % Copy of the Label3D skeleton struct
+        PlotSegments % array Line objects. Each line is a colored section of the skeleton (e.g. right arm) SHAPE: (#cams x 1)
+        points % single Line object which renders individal points for this camera
+        selectedNode % currently selected node during click/drag. Unset when mouse is released.
+        selectedNodePosition % position of selected node 
+        dragged % Logical array if marker has been moved by hand. SHAPE (#frames, #markers)
+        % NOTE: dragged is not reset to 0 if point is re-triangulated.
+        visibleDragPoints = true % toggle whether to show visible drag points (label3d sets as true)
     end
     
     methods
@@ -143,9 +145,10 @@ classdef DraggableKeypoint2DAnimator < Animator
         end
         
         function restrict(obj, newFrames)
-            %restrict - restricts animation to a subset of frames
+            % Recompute markersX & markersY based on newFrames frameInds mapping
             obj.markersX = obj.markers(newFrames, 1, :);
             obj.markersY = obj.markers(newFrames, 2, :);
+            % update frameInds to newFrames, reset nFrames, and set frame = 1
             restrict@Animator(obj, newFrames);
         end
         
@@ -174,6 +177,7 @@ classdef DraggableKeypoint2DAnimator < Animator
             set(ancestor(src, 'figure'), 'windowbuttonupfcn', @obj.stopdragging)
         end
         
+        % UNUSED: TODO delete?
         function deleteDataTips(obj)
             lines = obj.points;
             for nLine = 1:numel(lines)
@@ -185,12 +189,12 @@ classdef DraggableKeypoint2DAnimator < Animator
             % Find the index of the clicked node
             
             % Get current axes and coords
-            h1=gca;
-            coords=get(h1, 'currentpoint');
+            h1 = gca;
+            coords = get(h1, 'currentpoint');
             
             % Get all x and y data
-            x=src.XData;
-            y=src.YData;
+            x = src.XData;
+            y = src.YData;
             
             
             % Check which data point has the smallest distance to the dragged point
@@ -201,13 +205,17 @@ classdef DraggableKeypoint2DAnimator < Animator
         end
         
         function dragmarker(obj, fig, ev, src)
+            % fig = event source i.e. UI component that triggered the callback
+            % ev = event data
+            % src = custom argument. In this case the `event source` from the original callback.
+             
             % Create new x and y data and exchange coords for the dragged point
-            h1=gca;
-            coords=get(h1, 'currentpoint');
-            x_new=src.XData;
-            y_new=src.YData;
-            x_new(obj.selectedNode)=coords(1, 1, 1);
-            y_new(obj.selectedNode)=coords(1, 2, 1);
+            h1 = gca;
+            coords = get(h1, 'currentpoint');
+            x_new = src.XData;
+            y_new = src.YData;
+            x_new(obj.selectedNode) = coords(1, 1, 1);
+            y_new(obj.selectedNode) = coords(1, 2, 1);
             %update plot
             set(src, 'xdata', x_new, 'ydata', y_new);
             obj.dragged(obj.frameInds(obj.frame), obj.selectedNode) = true;

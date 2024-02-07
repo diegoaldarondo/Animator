@@ -61,9 +61,11 @@ classdef Keypoint3DAnimator < Animator
             %   Syntax: Keypoint3DAnimator(markers, skeleton, varargin);
             [animatorArgs, ~, varargin] = parseClassArgs('Animator', varargin{:});
             obj@Animator(animatorArgs{:});
+            
             % Check inputs
             validateattributes(markers, {'numeric'}, {'3d'})
             validateattributes(skeleton, {'struct'}, {})
+
             obj.markers = markers;
             obj.skeleton = skeleton;
             obj.color = obj.skeleton.color;

@@ -34,7 +34,7 @@ classdef HeatMapAnimator < Animator
     %                   restricted points. 
     %   zImage - Flip between zscored image and regular image. 
     %
-    %Tips: Press 'z' to flip between zscored and non zscored image.  
+    %Tips: Press 'z' to flip between zscored and non zscored image.
     properties (Access = private)
         statusMsg = 'HeatMapAnimator:\nFrame: %d\nframeRate: %d\n';
         LineWidth = 3
@@ -49,7 +49,7 @@ classdef HeatMapAnimator < Animator
         stds
         img
         centerLine
-        zIm=false;
+        zIm = false;
         origCLims
         seqSortWin = -5:5
     end

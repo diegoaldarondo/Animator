@@ -1,6 +1,7 @@
 classdef Keypoint2DAnimator < Animator
     %Keypoint2DAnimator - Make a movie of markers tracked over time. Concrete
     %subclass of Animator.
+    % NOTE: unused in Label3D
     %
     %   Keypoint2DAnimator Properties:
     %   lim - limits of viewing window
