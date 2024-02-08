@@ -63,7 +63,7 @@ classdef (Abstract) Animator < FlexChart
             obj.Parent = gcf;
             addToolbarExplorationButtons(gcf);
             set(obj.Parent, 'WindowKeyPressFcn', ...
-                @(src, event) keyPressCallback(obj, src, event));
+                @(src, event) obj.keyPressCallback(src, event));
             
             % Set up the axes
             hold(obj.Axes, 'on');
@@ -119,6 +119,7 @@ classdef (Abstract) Animator < FlexChart
         function keyPressCallback(obj, source, eventdata)
             % Determine the key that was pressed
             keyPressed = eventdata.Key;
+
             % The value updates are written this way to support
             % parallelization in very niche applications.
             % Consider rewriting.
@@ -262,50 +263,50 @@ classdef (Abstract) Animator < FlexChart
     end
     
     methods (Static)
-        function linkAll(h)
-            % update the links list based on the obj.h variable
-            % and call each handle's (obj.h) "keyPressCallback" function
-            for i = 1:numel(h)
-                h{i}.links = h;
+        function linkAll(animatorList)
+            % update the links value of all animators
+            % and set each animator's parent (E.g. "Label3d GUI" to runAll animator keyPressCallback's)
+            for i = 1:numel(animatorList)
+                animatorList{i}.links = animatorList;
             end
             cellfun( ...
                 @(X) set( ...
                     X.Parent, ...
                     'WindowKeyPressFcn', ...
-                    @(src, event) Animator.runAll(h, src, event) ...
-                ), h)
+                    @(src, event) Animator.runAll(animatorList, src, event) ...
+                ), animatorList)
         end
         
         % NOTE: never used in Label3D
-        function tileAnimators(h, varargin)
-            % position all animators specific by "h" (handle) 
+        function tileAnimators(animatorList, varargin)
+            % position all animators specific by an cell array of animator handles 
             % varargin = {pad}
-            nAnimators = numel(h);
+            nAnimators = numel(animatorList);
             pad = .05;
             if ~isempty(varargin)
                 pad = varargin{1};
             end
-            w = 1./nAnimators - 2*pad;
-            starts = (1./nAnimators)*[0:(nAnimators-1)] + pad;
+            w = 1 / nAnimators - 2 * pad;
+            starts = (1 / nAnimators) * (0 : (nAnimators - 1)) + pad;
             for nAnimator = 1:nAnimators
-                ax = h{nAnimator}.getAxes();
+                ax = animatorList{nAnimator}.getAxes();
                 % set position syntax: [left, bottom, width, height]
-                set(ax, 'Position', [starts(nAnimator) pad/2 w 1-2*pad])
+                set(ax, 'Position', [starts(nAnimator), pad/2, w, 1-2*pad])
             end
         end
         
-        function runAll(h, src, event)
+        function runAll(animatorList, src, event)
             %runAll - iterate through the keyPressCallback function of all
             %Animators within a cell array.
             %
-            %   Syntax: runAll(h, src, event);
+            %   Syntax: runAll(animatorList, src, event);
             %
             %   Notes: It is useful to assign this function as the
             %          WindowKeyPressFcn of a figure with multiple axes
             %          that listen for key presses.
-            for i = 1:numel(h)
-                if isa(h{i}, 'Animator')
-                    h{i}.keyPressCallback(src, event)
+            for i = 1:numel(animatorList)
+                if isa(animatorList{i}, 'Animator')
+                    animatorList{i}.keyPressCallback(src, event)
                 end
             end
         end

@@ -163,18 +163,19 @@ classdef DraggableKeypoint2DAnimator < Animator
             % Create invisible draggable plotting points to act as anchors
             % for multicolor lines. 
             % Consider reimplementing with draggable()
-            lines = line(ax, x, y, 'hittest', 'on', 'buttondownfcn', ...
-                @obj.clickmarker, 'PickableParts', 'all', 'Visible', obj.visibleDragPoints, ...
+            lines = line(ax, x, y, 'hittest', 'on', 'ButtonDownFcn', ...
+                @obj.handleClickOnLine, 'PickableParts', 'all', 'Visible', obj.visibleDragPoints, ...
                 varargin{:});
             
         end
         
-        function clickmarker(obj, src, ev)
+        function handleClickOnLine(obj, lineObj, hitEvent)
             % Handle clicks on markers by turning on dragging mode. 
-            obj.selectedNode = obj.getSelectedNode(src);
+            obj.selectedNode = obj.getSelectedNode(lineObj);
             obj.dragged(obj.frameInds(obj.frame), obj.selectedNode) = true;
-            set(ancestor(src, 'figure'), 'windowbuttonmotionfcn', {@obj.dragmarker, src})
-            set(ancestor(src, 'figure'), 'windowbuttonupfcn', @obj.stopdragging)
+            rootFigure = ancestor(lineObj, 'figure');
+            set(rootFigure, 'WindowButtonMotionFcn', @(figureObj, mouseEvent) obj.handleDrag(figureObj, mouseEvent, lineObj))
+            set(rootFigure, 'WindowButtonUpFcn', @(figureObj, mouseEvent) obj.cleanupDrag(figureObj, mouseEvent))
         end
         
         % UNUSED: TODO delete?
@@ -196,7 +197,6 @@ classdef DraggableKeypoint2DAnimator < Animator
             x = src.XData;
             y = src.YData;
             
-            
             % Check which data point has the smallest distance to the dragged point
             x_diff = abs(x-coords(1, 1, 1));
             y_diff = abs(y-coords(1, 2, 1));
@@ -204,32 +204,33 @@ classdef DraggableKeypoint2DAnimator < Animator
             obj.selectedNodePosition = [x(index), y(index)];
         end
         
-        function dragmarker(obj, fig, ev, src)
-            % fig = event source i.e. UI component that triggered the callback
-            % ev = event data
-            % src = custom argument. In this case the `event source` from the original callback.
-             
+        function handleDrag(obj, figureObj, mouseEvent, lineObj)
+            % figueObj = object that triggered callback. In this case, always: "Label3D GUI"
+            % mouesEvent = event data
+            % lineObj = "Line" object that triggered the original ButtonDown callback
+
             % Create new x and y data and exchange coords for the dragged point
             h1 = gca;
             coords = get(h1, 'currentpoint');
-            x_new = src.XData;
-            y_new = src.YData;
+            x_new = lineObj.XData;
+            y_new = lineObj.YData;
             x_new(obj.selectedNode) = coords(1, 1, 1);
             y_new(obj.selectedNode) = coords(1, 2, 1);
-            %update plot
-            set(src, 'xdata', x_new, 'ydata', y_new);
+            % update plot
+            set(lineObj, 'xdata', x_new, 'ydata', y_new);
             obj.dragged(obj.frameInds(obj.frame), obj.selectedNode) = true;
             obj.update()
         end
         
-        function stopdragging(obj, fig, ev)
+        function cleanupDrag(obj, figureObj, mouseEvent)
             % Stop dragging mode
-            set(fig, 'windowbuttonmotionfcn', '')
-            set(fig, 'windowbuttonupfcn', '')
+            set(figureObj, 'WindowButtonMotionFcn', '')
+            set(figureObj, 'WindowButtonUpFcn', '')
 
             % Run the figure's windowKeyPress fcn to allow for syncing
-            E.Key = 'temp';
-            fig.WindowKeyPressFcn([], E)
+            dummyEvent = struct();
+            dummyEvent.Key = 'temp';
+            figureObj.WindowKeyPressFcn([], dummyEvent)
             
             obj.selectedNode = nan;
             obj.selectedNodePosition = [];
@@ -250,7 +251,7 @@ classdef DraggableKeypoint2DAnimator < Animator
         function deleteSelectedNode(obj)
             obj.points.XData(obj.selectedNode) = nan;
             obj.points.YData(obj.selectedNode) = nan;
-            obj.stopdragging(obj.Parent, []);
+            obj.cleanupDrag(obj.Parent, []);
             obj.dragged(obj.frameInds(obj.frame), obj.selectedNode) = false;
             obj.update();
         end

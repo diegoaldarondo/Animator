@@ -64,7 +64,7 @@ classdef HeatMapAnimator < Animator
             end
             
             if ~isempty(varargin)
-                set(obj,varargin{:});
+                set(obj, varargin{:});
             end
             % Handle defaults
             if isempty(obj.nFrames)
@@ -76,35 +76,35 @@ classdef HeatMapAnimator < Animator
             obj.frameInds = 1:obj.nFrames;
             
             % Plot the first image
-            hold(obj.Axes,'off')
+            hold(obj.Axes, 'off')
             obj.img = imagesc(obj.Axes, obj.X');
 %             colormap(parula)
-            obj.origCLims = prctile(obj.X(:), [2.5 97.5]);
+            obj.origCLims = prctile(obj.X(:), [2.5, 97.5]);
             obj.means = nanmean(obj.X);
             obj.stds = nanstd(obj.X);
 %             obj.zImage()
             obj.c = colorbar(obj.Axes);
-            lims = [min(obj.frame+obj.viewingWindow) max(obj.frame+obj.viewingWindow)];
-            xlim(obj.Axes,lims)
-%             hold(obj.Axes,'on');
+            lims = [min(obj.frame + obj.viewingWindow) max(obj.frame + obj.viewingWindow)];
+            xlim(obj.Axes, lims)
+%             hold(obj.Axes, 'on');
             
             % Plot the current frame line
-            obj.centerLine = line(obj.Axes,[obj.frame obj.frame],...
-                get(obj.Axes,'YLim'),'color','w','LineWidth',obj.LineWidth);
+            obj.centerLine = line(obj.Axes, [obj.frame, obj.frame], ...
+                get(obj.Axes, 'YLim'), 'color', 'w', 'LineWidth', obj.LineWidth);
         end
         
         function restrict(obj, newFrames)
             restrict@Animator(obj, newFrames);
         end
         
-        function keyPressCallback(obj,source,eventdata)
+        function keyPressCallback(obj, source, eventdata)
             % determine the key that was pressed
-            keyPressCallback@Animator(obj,source,eventdata);
+            keyPressCallback@Animator(obj, source, eventdata);
             keyPressed = eventdata.Key;
             switch keyPressed
                 case 's'
-                    fprintf(obj.statusMsg,...
-                        obj.frameInds(obj.frame),obj.frameRate);
+                    fprintf(obj.statusMsg, ...
+                        obj.frameInds(obj.frame), obj.frameRate);
                 case 'r'
                     reset(obj);
 %                 case 'z'
@@ -118,17 +118,17 @@ classdef HeatMapAnimator < Animator
         end
         
         function reorder(obj, inds) 
-            obj.img.CData = obj.img.CData(inds,:);
+            obj.img.CData = obj.img.CData(inds, :);
         end
         
         function seqSort(obj)
-            [avg, ~] = obj.averageAligned(true,obj.seqSortWin);
-            if ~isequal(obj.I, 1:size(obj.X,2))
+            [avg, ~] = obj.averageAligned(true, obj.seqSortWin);
+            if ~isequal(obj.I, 1 : size(obj.X, 2))
                 [~, inds] = sort(obj.I);
-                obj.I = 1:size(obj.X,2);
+                obj.I = 1 : size(obj.X, 2);
                 obj.reorder(inds)
             end
-            [~, inds] = max(abs(avg),[],1);
+            [~, inds] = max(abs(avg), [], 1);
             [~, obj.I] = sort(inds);
             obj.reorder(obj.I);
         end
@@ -137,7 +137,7 @@ classdef HeatMapAnimator < Animator
             if ~isempty(varargin)
                 window = varargin{1};
             else
-                window = -10:10;
+                window = -10 : 10;
             end
             ids = obj.frameInds;
             starts = ids(diffpad(ids) ~= 1);
@@ -147,7 +147,7 @@ classdef HeatMapAnimator < Animator
             else
                 tot = indpad2(obj.X, ids);
             end
-            avg = squeeze(nanmean(tot,1));
+            avg = squeeze(nanmean(tot, 1));
         end
         
         function [metric, ranked, ids] = rankVariables(obj, varargin)
@@ -156,7 +156,7 @@ classdef HeatMapAnimator < Animator
             if ~isempty(varargin)
                 window = varargin{1};
             else
-                window = 0:10;
+                window = 0 : 10;
             end
             
             [avg, ~] = obj.averageAligned(true, window);
@@ -175,7 +175,7 @@ classdef HeatMapAnimator < Animator
 %                 obj.zIm = true;
                 
                 obj.img.CData = (obj.img.CData - obj.means') ./ obj.stds';
-                caxis(obj.Axes, [-3 3])
+                caxis(obj.Axes, [-3, 3])
                 obj.zIm = true;
             end
         end
@@ -184,16 +184,16 @@ classdef HeatMapAnimator < Animator
     methods (Access = private)
         function reset(obj)
             % Set embedMovie and associated MarkerMovies to the orig. size
-            restrict(obj,1:size(obj.X,1));
+            restrict(obj, 1 : size(obj.X, 1));
         end
     end
     
     methods (Access = protected)
         function update(obj)
             obj.checkVisible()
-            lims = [min(obj.frameInds(obj.frame)+obj.viewingWindow) max(obj.frameInds(obj.frame)+obj.viewingWindow)];
+            lims = [min(obj.frameInds(obj.frame) + obj.viewingWindow),  max(obj.frameInds(obj.frame) + obj.viewingWindow)];
             set(obj.Axes, 'XLim', lims)
-            set(obj.centerLine,'XData',[obj.frameInds(obj.frame) obj.frameInds(obj.frame)],'YData', get(obj.Axes,'YLim'));
+            set(obj.centerLine, 'XData', [obj.frameInds(obj.frame), obj.frameInds(obj.frame)], 'YData', get(obj.Axes, 'YLim'));
         end
     end
 end
