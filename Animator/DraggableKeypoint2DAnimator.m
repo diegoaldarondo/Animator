@@ -95,7 +95,7 @@ classdef DraggableKeypoint2DAnimator < Animator
             
             % Private constructions
             obj.nFrames = size(obj.markers, 1);
-            obj.frameInds = 1:obj.nFrames;
+            obj.frameInds = 1 : obj.nFrames;
             obj.markersX = obj.markers(:, 1, :);
             obj.markersY = obj.markers(:, 2, :);
             obj.nMarkers = size(obj.markers, 3);
@@ -117,8 +117,8 @@ classdef DraggableKeypoint2DAnimator < Animator
             catnanY = cat(1, curY, nan(1, size(curY, 2)));
             
             % Put into array for vectorized graphics initialization
-            nanedXVec = nan(MaxNNodes*2, size(colors, 1));
-            nanedYVec = nan(MaxNNodes*2, size(colors, 1));
+            nanedXVec = nan(MaxNNodes * 2, size(colors, 1));
+            nanedYVec = nan(MaxNNodes * 2, size(colors, 1));
             for nColor = 1:size(colors, 1)
                 nanedXVec(1:numel(catnanX(:, cIds==nColor)), nColor) = reshape(catnanX(:, cIds==nColor), [], 1);
                 nanedYVec(1:numel(catnanY(:, cIds==nColor)), nColor) = reshape(catnanY(:, cIds==nColor), [], 1);
@@ -201,7 +201,7 @@ classdef DraggableKeypoint2DAnimator < Animator
             % Check which data point has the smallest distance to the dragged point
             x_diff = abs(x-coords(1, 1, 1));
             y_diff = abs(y-coords(1, 2, 1));
-            [~, index] = min(sqrt(x_diff.^2+y_diff.^2));
+            [~, index] = min(sqrt(x_diff .^ 2 + y_diff .^ 2));
             obj.selectedNodePosition = [x(index), y(index)];
         end
         
@@ -289,7 +289,7 @@ classdef DraggableKeypoint2DAnimator < Animator
     
     methods (Access = private)
         function reset(obj)
-            restrict(obj, 1:size(obj.markers, 1))
+            restrict(obj, 1 : size(obj.markers, 1));
         end
     end
     
@@ -318,15 +318,15 @@ classdef DraggableKeypoint2DAnimator < Animator
             nanedXVec = cell(size(colors, 1), 1);
             nanedYVec = cell(size(colors, 1), 1);
             for i = 1:size(colors, 1)
-                nanedXVec{i} = reshape(catnanX(:, cIds==i), [], 1);
-                nanedYVec{i} = reshape(catnanY(:, cIds==i), [], 1);
+                nanedXVec{i} = reshape(catnanX(:, cIds == i), [], 1);
+                nanedYVec{i} = reshape(catnanY(:, cIds == i), [], 1);
             end
             
             % Update the values
             valueArray = cat(2, nanedXVec, nanedYVec);
             nameArray = {'XData', 'YData'};
             segments = obj.PlotSegments;
-            set(segments, nameArray, valueArray)
+            set(segments, nameArray, valueArray);
         end
     end
 end

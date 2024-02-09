@@ -88,7 +88,7 @@ classdef (Abstract) Animator < FlexChart
             % Set frame, but loop around before or after (adjust for 0 = nFrames)
             % also re-render the screen
             obj.frame = mod(newFrame, obj.nFrames);
-            obj.frame(obj.frame==0) = obj.nFrames;
+            obj.frame(obj.frame == 0) = obj.nFrames;
             update(obj)
         end % set.frame
         
@@ -186,10 +186,10 @@ classdef (Abstract) Animator < FlexChart
             % Iterate through frames, update each Animator, and get the
             % image.
             origFrame = linkedAnimators{1}.frame;
-            for nFrame = 1:numel(frameIds)
+            for nFrame = 1 : numel(frameIds)
                 % Sometimes you might want to change this syntax if you've
                 % restricted frames via Animator.restrict.
-                for nAnimator = 1:numel(linkedAnimators)
+                for nAnimator = 1 : numel(linkedAnimators)
                     linkedAnimators{nAnimator}.frame = frameIds(nFrame);
 %                     linkedAnimators{nAnimator}.frame = linkedAnimators{nAnimator}.frame + 1;
                 end
@@ -204,7 +204,7 @@ classdef (Abstract) Animator < FlexChart
                 
                 % Print out an estimate of rendering time.
                 if nFrame == 100
-                    rate = 100/(toc);
+                    rate = 100 / (toc);
                     fprintf('Estimated time remaining: %f seconds\n', ...
                         numel(frameIds)/rate)
                 end
@@ -213,7 +213,7 @@ classdef (Abstract) Animator < FlexChart
             V = cat(4, V{:});
             fprintf('Writing movie to: %s\n', savePath);
             if strcmp(get_ext(savePath), '.gif')
-                for nFrame = 1:size(V, 4)
+                for nFrame = 1 : size(V, 4)
                     im = squeeze(V(:, :, :, nFrame));
                     [imind, cm] = rgb2ind(im, 256);
                     if nFrame == 1
@@ -246,10 +246,10 @@ classdef (Abstract) Animator < FlexChart
             tic
             % Iterate through frames, update each Animator
             origFrame = linkedAnimators{1}.frame;
-            for nFrame = 1:numel(frameIds)
+            for nFrame = 1 : numel(frameIds)
                 % Sometimes you might want to change this syntax if you've
                 % restricted frames via Animator.restrict.
-                for nAnimator = 1:numel(linkedAnimators)
+                for nAnimator = 1 : numel(linkedAnimators)
                     linkedAnimators{nAnimator}.frame = frameIds(nFrame);
                     
                 end
@@ -282,13 +282,13 @@ classdef (Abstract) Animator < FlexChart
             % position all animators specific by an cell array of animator handles 
             % varargin = {pad}
             nAnimators = numel(animatorList);
-            pad = .05;
+            pad = 0.05;
             if ~isempty(varargin)
                 pad = varargin{1};
             end
             w = 1 / nAnimators - 2 * pad;
             starts = (1 / nAnimators) * (0 : (nAnimators - 1)) + pad;
-            for nAnimator = 1:nAnimators
+            for nAnimator = 1 : nAnimators
                 ax = animatorList{nAnimator}.getAxes();
                 % set position syntax: [left, bottom, width, height]
                 set(ax, 'Position', [starts(nAnimator), pad/2, w, 1-2*pad])
@@ -304,7 +304,7 @@ classdef (Abstract) Animator < FlexChart
             %   Notes: It is useful to assign this function as the
             %          WindowKeyPressFcn of a figure with multiple axes
             %          that listen for key presses.
-            for i = 1:numel(animatorList)
+            for i = 1 : numel(animatorList)
                 if isa(animatorList{i}, 'Animator')
                     animatorList{i}.keyPressCallback(src, event)
                 end
