@@ -17,7 +17,7 @@ classdef DraggableKeypoint2DAnimator < Animator
     %   restrict - restrict the animation to a subset of the frames
     %   getCurrentFramePositions - Get the positions of markers in the
     %       frame.
-    %   dragpoints - Create draggable points
+    %   createDragPointsLine - Create draggable points
     %   resetFrame - Reset frame to the original position. 
     %   keyPressCallback - handle UI
     properties (Access = private)
@@ -136,7 +136,7 @@ classdef DraggableKeypoint2DAnimator < Animator
             % colored lines.
             frameX = obj.markersX(obj.frameInds(obj.frame), :);
             frameY = obj.markersY(obj.frameInds(obj.frame), :);
-            obj.points = obj.dragpoints(obj.Axes, frameX, frameY, ...
+            obj.points = obj.createDragPointsLine(obj.Axes, frameX, frameY, ...
                 'LineStyle', 'none', 'LineWidth', 1, 'Marker', '.', 'MarkerSize', ...
                 20, 'Color', obj.DragPointColor);
             ax = handle(obj.Axes);
@@ -153,13 +153,14 @@ classdef DraggableKeypoint2DAnimator < Animator
         end
         
         function curMarker = getCurrentFramePositions(obj)
-            % Get the current position of the draggable nodes.
+            % Get the x,y positions of each marker in the current frame: (# markers, 2) DOUBLES MATRIX
+            % Return NaN for coordinate if marker is not defined
             x = obj.points.XData;
             y = obj.points.YData;
             curMarker = [x ; y]';
         end
         
-        function lines = dragpoints(obj, ax, x, y, varargin)
+        function lines = createDragPointsLine(obj, ax, x, y, varargin)
             % Create invisible draggable plotting points to act as anchors
             % for multicolor lines. 
             % Consider reimplementing with draggable()
@@ -170,7 +171,7 @@ classdef DraggableKeypoint2DAnimator < Animator
         end
         
         function handleClickOnLine(obj, lineObj, hitEvent)
-            % Handle clicks on markers by turning on dragging mode. 
+            % Handle clicks on invisible draggable line
             obj.selectedNode = obj.getSelectedNode(lineObj);
             obj.dragged(obj.frameInds(obj.frame), obj.selectedNode) = true;
             rootFigure = ancestor(lineObj, 'figure');
@@ -228,6 +229,14 @@ classdef DraggableKeypoint2DAnimator < Animator
             set(figureObj, 'WindowButtonUpFcn', '')
 
             % Run the figure's windowKeyPress fcn to allow for syncing
+      
+            % This calls keyPressCallback on all animators with the following effects:
+            % 
+            % DraggableKeypoint2DAnimator:  -
+            % Keypoint3DAnimator:  -
+            % Label3D:  checkForClickedNodes(), checkStatus(), & update()
+            % VideoAnimator:  update()
+            
             dummyEvent = struct();
             dummyEvent.Key = 'temp';
             figureObj.WindowKeyPressFcn([], dummyEvent)
@@ -287,11 +296,12 @@ classdef DraggableKeypoint2DAnimator < Animator
             % Find color groups
             [colors, ~, cIds] = unique(obj.color, 'rows');
             
-            curFrame = obj.getCurrentFramePositions();
+            curFrameCoords = obj.getCurrentFramePositions();
             
             % Get the joints for the current frame
-            curX = curFrame(:, 1);
-            curY = curFrame(:, 2);
+            curX = curFrameCoords(:, 1);
+            curY = curFrameCoords(:, 2);
+
             curX = curX(obj.joints)';
             curY = curY(obj.joints)';
             
