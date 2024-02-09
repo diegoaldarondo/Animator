@@ -7,7 +7,7 @@ classdef VideoAnimator < Animator
     %VideoAnimator Properties:
     %   V - 4D (i, j, channel, N) movie to animate.
     %   img - Handle to the imshow object
-    %   
+    %
     %
     %VideoAnimator Methods:
     %VideoAnimator - constructor
@@ -43,7 +43,7 @@ classdef VideoAnimator < Animator
             % User defined inputs
             if ~isempty(V)
                 obj.V = V;
-                % Handle 3 dimensional matrices as grayscale videos. 
+                % Handle 3 dimensional matrices as grayscale videos.
                 if numel(size(obj.V)) == 3
                     obj.V = reshape(obj.V, size(obj.V, 1), size(obj.V, 2), 1, size(obj.V, 3));
                 end

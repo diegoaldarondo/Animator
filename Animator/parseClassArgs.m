@@ -7,7 +7,7 @@ function [classArgs, classInds, nonClassArgs] = parseClassArgs(className, vararg
 %   classArgs - Cell array of class arguments
 %   classInds - Logical indices denoting original positions of class
 %               arguments. (class name & argument)
-% Syntax: 
+% Syntax:
 %   [classArgs, classInds] = parseClassArgs(className, varargin{:})
 
 nameIds = cellfun(@ischar, varargin); % logical array: 1 = string

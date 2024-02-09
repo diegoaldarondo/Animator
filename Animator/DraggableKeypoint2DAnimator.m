@@ -1,5 +1,5 @@
 classdef DraggableKeypoint2DAnimator < Animator
-    %DraggableKeypoint2DAnimator - Animate multicolor keypoints in 2D with 
+    %DraggableKeypoint2DAnimator - Animate multicolor keypoints in 2D with
     %   draggable nodes. Concrete subclass of Animator.
     %
     %   DraggableKeypoint2DAnimator Properties:
@@ -18,7 +18,7 @@ classdef DraggableKeypoint2DAnimator < Animator
     %   getCurrentFramePositions - Get the positions of markers in the
     %       frame.
     %   createDragPointsLine - Create draggable points
-    %   resetFrame - Reset frame to the original position. 
+    %   resetFrame - Reset frame to the original position.
     %   keyPressCallback - handle UI
     properties (Access = private)
         nMarkers % # markers
@@ -49,7 +49,7 @@ classdef DraggableKeypoint2DAnimator < Animator
         PlotSegments % array Line objects. Each line is a colored section of the skeleton (e.g. right arm) SHAPE: (#cams x 1)
         points % single Line object which renders individal points for this camera
         selectedNode % currently selected node during click/drag. Unset when mouse is released.
-        selectedNodePosition % position of selected node 
+        selectedNodePosition % position of selected node
         dragged % Logical array if marker has been moved by hand. SHAPE (#frames, #markers)
         % NOTE: dragged is not reset to 0 if point is re-triangulated.
         visibleDragPoints = true % toggle whether to show visible drag points (label3d sets as true)
@@ -69,7 +69,7 @@ classdef DraggableKeypoint2DAnimator < Animator
             %   Syntax: DraggableKeypoint2DAnimator(markers, skeleton, varargin);
             [animatorArgs, ~, varargin] = parseClassArgs('Animator', varargin{:});
             obj@Animator(animatorArgs{:});
-
+            
             % Check inputs
             validateattributes(markers, {'numeric'}, {'3d'})
             validateattributes(skeleton, {'struct'}, {})
@@ -86,7 +86,7 @@ classdef DraggableKeypoint2DAnimator < Animator
             if size(obj.color, 1) ~= size(obj.joints, 1)
                 error('Number of colors and number of segments do not match');
             end
-
+            
             % User defined inputs
             if ~isempty(varargin)
                 set(obj, varargin{:});
@@ -162,7 +162,7 @@ classdef DraggableKeypoint2DAnimator < Animator
         
         function lines = createDragPointsLine(obj, ax, x, y, varargin)
             % Create invisible draggable plotting points to act as anchors
-            % for multicolor lines. 
+            % for multicolor lines.
             % Consider reimplementing with draggable()
             lines = line(ax, x, y, 'hittest', 'on', 'ButtonDownFcn', ...
                 @obj.handleClickOnLine, 'PickableParts', 'all', 'Visible', obj.visibleDragPoints, ...
@@ -209,7 +209,7 @@ classdef DraggableKeypoint2DAnimator < Animator
             % figueObj = object that triggered callback. In this case, always: "Label3D GUI"
             % mouesEvent = event data
             % lineObj = "Line" object that triggered the original ButtonDown callback
-
+            
             % Create new x and y data and exchange coords for the dragged point
             h1 = gca;
             coords = get(h1, 'currentpoint');
@@ -227,11 +227,11 @@ classdef DraggableKeypoint2DAnimator < Animator
             % Stop dragging mode
             set(figureObj, 'WindowButtonMotionFcn', '')
             set(figureObj, 'WindowButtonUpFcn', '')
-
+            
             % Run the figure's windowKeyPress fcn to allow for syncing
-      
+            
             % This calls keyPressCallback on all animators with the following effects:
-            % 
+            %
             % DraggableKeypoint2DAnimator:  -
             % Keypoint3DAnimator:  -
             % Label3D:  checkForClickedNodes(), checkStatus(), & update()
@@ -246,7 +246,7 @@ classdef DraggableKeypoint2DAnimator < Animator
         end
         
         function resetFrame(obj)
-            % Reset the frame to the original positions of markers. 
+            % Reset the frame to the original positions of markers.
             f = obj.frameInds(obj.frame);
             obj.markers(f, :, :) = obj.origMarkers(f, :, :);
             obj.markersX = obj.markers(:, 1, :);
@@ -264,7 +264,7 @@ classdef DraggableKeypoint2DAnimator < Animator
             
             % will reset obj.selectedNode -- MUST CALL AFTER prior lines
             obj.cleanupDrag(obj.Parent, []);
-
+            
             obj.update();
         end
         
@@ -304,7 +304,7 @@ classdef DraggableKeypoint2DAnimator < Animator
             % Get the joints for the current frame
             curX = curFrameCoords(:, 1);
             curY = curFrameCoords(:, 2);
-
+            
             curX = curX(obj.joints)';
             curY = curY(obj.joints)';
             

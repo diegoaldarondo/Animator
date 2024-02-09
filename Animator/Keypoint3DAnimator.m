@@ -57,15 +57,15 @@ classdef Keypoint3DAnimator < Animator
             %   skeleton: Structure with two fields:
             %       skeleton.color: nSegments x 3 matrix of RGB values
             %       skeleton.joints_idx: nSegments x 2 matrix of integers
-            %           denoting directed edges between markers. 
+            %           denoting directed edges between markers.
             %   Syntax: Keypoint3DAnimator(markers, skeleton, varargin);
             [animatorArgs, ~, varargin] = parseClassArgs('Animator', varargin{:});
             obj@Animator(animatorArgs{:});
-
+            
             % Check inputs
             validateattributes(markers, {'numeric'}, {'3d'})
             validateattributes(skeleton, {'struct'}, {})
-
+            
             obj.markers = markers;
             obj.skeleton = skeleton;
             obj.color = obj.skeleton.color;
@@ -108,8 +108,8 @@ classdef Keypoint3DAnimator < Animator
             curY = curY(obj.joints)';
             curZ = curZ(obj.joints)';
             
-            %%% Very fast updating procedure with low level graphics. 
-            % Concatenate with nans between segment ends to represent all 
+            %%% Very fast updating procedure with low level graphics.
+            % Concatenate with nans between segment ends to represent all
             % segments with the same color as one single line object
             catnanX = cat(1, curX, nan(1, size(curX, 2)));
             catnanY = cat(1, curY, nan(1, size(curY, 2)));
@@ -186,8 +186,8 @@ classdef Keypoint3DAnimator < Animator
             curY = curY(obj.joints)';
             curZ = curZ(obj.joints)';
             
-            %%% Very fast updating procedure with low level graphics. 
-            % Concatenate with nans between segment ends to represent all 
+            %%% Very fast updating procedure with low level graphics.
+            % Concatenate with nans between segment ends to represent all
             % segments with the same color as one single line object
             catnanX = cat(1, curX, nan(1, size(curX, 2)));
             catnanY = cat(1, curY, nan(1, size(curY, 2)));

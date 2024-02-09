@@ -14,25 +14,25 @@ classdef HeatMapAnimator < Animator
     %   centerLine - Handle to line denoting current frame in heatmap
     %   zIm - Logical denoting whether the heatmap is currently zscored by
     %         dimensions.
-    %         Default behavior is to automatically zscore dimensions. 
-    %   origCLims - limits of [2.5 97.5] data percentiles for switching 
-    %               between z-scored representations and standard ones. 
-    %   seqSortWin - window to look in for sequential sorting. 
-    % 
+    %         Default behavior is to automatically zscore dimensions.
+    %   origCLims - limits of [2.5 97.5] data percentiles for switching
+    %               between z-scored representations and standard ones.
+    %   seqSortWin - window to look in for sequential sorting.
+    %
     %HeatmapAnimator Methods:
     %   Animator - constructor
     %   restrict - restrict animation to subset of frames
     %   keyPressCalback - handle UI
     %   reorder - Change the order of dimensions to some set.
-    %   seqSort - Sort the dimensions according to the argmax 
+    %   seqSort - Sort the dimensions according to the argmax
     %             relative to a window surrounding points. Most useful for
     %             finding sequential activity in restricted sets of data.
     %   averageAligned - find average activity in window surrounding
     %             restricted points
     %   rankVariables - rank dimensions as a function of magnitude of
-    %                   average activity in a window surrounding 
-    %                   restricted points. 
-    %   zImage - Flip between zscored image and regular image. 
+    %                   average activity in a window surrounding
+    %                   restricted points.
+    %   zImage - Flip between zscored image and regular image.
     %
     %Tips: Press 'z' to flip between zscored and non zscored image.
     properties (Access = private)
@@ -78,15 +78,15 @@ classdef HeatMapAnimator < Animator
             % Plot the first image
             hold(obj.Axes, 'off')
             obj.img = imagesc(obj.Axes, obj.X');
-%             colormap(parula)
+            %             colormap(parula)
             obj.origCLims = prctile(obj.X(:), [2.5, 97.5]);
             obj.means = nanmean(obj.X);
             obj.stds = nanstd(obj.X);
-%             obj.zImage()
+            %             obj.zImage()
             obj.c = colorbar(obj.Axes);
             lims = [min(obj.frame + obj.viewingWindow) max(obj.frame + obj.viewingWindow)];
             xlim(obj.Axes, lims)
-%             hold(obj.Axes, 'on');
+            %             hold(obj.Axes, 'on');
             
             % Plot the current frame line
             obj.centerLine = line(obj.Axes, [obj.frame, obj.frame], ...
@@ -107,8 +107,8 @@ classdef HeatMapAnimator < Animator
                         obj.frameInds(obj.frame), obj.frameRate);
                 case 'r'
                     reset(obj);
-%                 case 'z'
-%                     obj.zImage();
+                    % case 'z'
+                    %     obj.zImage();
                 case 't'
                     if obj.scope == obj.id
                         obj.seqSort();
@@ -117,7 +117,7 @@ classdef HeatMapAnimator < Animator
             update(obj);
         end
         
-        function reorder(obj, inds) 
+        function reorder(obj, inds)
             obj.img.CData = obj.img.CData(inds, :);
         end
         
@@ -165,14 +165,14 @@ classdef HeatMapAnimator < Animator
         end
         
         function zImage(obj)
-            if obj.zIm 
+            if obj.zIm
                 obj.img.CData = obj.img.CData.*obj.stds' + obj.means';
                 caxis(obj.Axes, obj.origCLims)
                 obj.zIm = false;
             else
-%                 obj.img.CData = abs((obj.img.CData - obj.means') ./ obj.stds');
-%                 caxis(obj.Axes, [0 3])
-%                 obj.zIm = true;
+                % obj.img.CData = abs((obj.img.CData - obj.means') ./ obj.stds');
+                % caxis(obj.Axes, [0 3])
+                % obj.zIm = true;
                 
                 obj.img.CData = (obj.img.CData - obj.means') ./ obj.stds';
                 caxis(obj.Axes, [-3, 3])
