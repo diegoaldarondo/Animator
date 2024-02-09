@@ -260,8 +260,11 @@ classdef DraggableKeypoint2DAnimator < Animator
         function deleteSelectedNode(obj)
             obj.points.XData(obj.selectedNode) = nan;
             obj.points.YData(obj.selectedNode) = nan;
-            obj.cleanupDrag(obj.Parent, []);
             obj.dragged(obj.frameInds(obj.frame), obj.selectedNode) = false;
+            
+            % will reset obj.selectedNode -- MUST CALL AFTER prior lines
+            obj.cleanupDrag(obj.Parent, []);
+
             obj.update();
         end
         
