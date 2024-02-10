@@ -43,14 +43,15 @@ classdef DraggableKeypoint2DAnimator < Animator
         LineWidth = 3;
         markers % x,y position of markers. SHAPE: (# frames, 2, # markers)
         % NOTE: Why are there seperate x and y position arrays? why not just pull from markers
-        markersX % x positions: SHAPE (# frames, 1, #markers)
-        markersY % y positions: SHAPE (# frames, 1, #markers)
+        markersX % x positions: SHAPE (# frames, 1, # markers)
+        markersY % y positions: SHAPE (# frames, 1, # markers)
         skeleton % Copy of the Label3D skeleton struct
+        markerColors % optional: specifies the color for each joint
         PlotSegments % array Line objects. Each line is a colored section of the skeleton (e.g. right arm) SHAPE: (#cams x 1)
         points % single Line object which renders individal points for this camera
         selectedNode % currently selected node during click/drag. Unset when mouse is released.
         selectedNodePosition % position of selected node
-        dragged % Logical array if marker has been moved by hand. SHAPE (#frames, #markers)
+        dragged % Logical array if marker has been moved by hand. SHAPE (# frames, # markers)
         % NOTE: dragged is not reset to 0 if point is re-triangulated.
         visibleDragPoints = true % toggle whether to show visible drag points (label3d sets as true)
     end
@@ -78,6 +79,13 @@ classdef DraggableKeypoint2DAnimator < Animator
             obj.skeleton = skeleton;
             obj.color = obj.skeleton.color;
             obj.joints = obj.skeleton.joints_idx;
+
+            if isfield(obj.skeleton, 'marker_colors')
+                obj.markerColors = obj.skeleton.marker_colors;
+            else
+                obj.markerColors = [];
+            end
+
             validateattributes(obj.joints, {'numeric'}, {'positive'})
             validateattributes(obj.color, {'numeric'}, {'nonnegative'})
             if max(max(obj.joints)) > size(obj.markers, 3)
@@ -119,9 +127,9 @@ classdef DraggableKeypoint2DAnimator < Animator
             % Put into array for vectorized graphics initialization
             nanedXVec = nan(MaxNNodes * 2, size(colors, 1));
             nanedYVec = nan(MaxNNodes * 2, size(colors, 1));
-            for nColor = 1:size(colors, 1)
-                nanedXVec(1:numel(catnanX(:, cIds==nColor)), nColor) = reshape(catnanX(:, cIds==nColor), [], 1);
-                nanedYVec(1:numel(catnanY(:, cIds==nColor)), nColor) = reshape(catnanY(:, cIds==nColor), [], 1);
+            for nColor = 1 : size(colors, 1)
+                nanedXVec(1 : numel(catnanX(:, cIds == nColor)), nColor) = reshape(catnanX(:, cIds == nColor), [], 1);
+                nanedYVec(1 : numel(catnanY(:, cIds == nColor)), nColor) = reshape(catnanY(:, cIds == nColor), [], 1);
             end
             obj.PlotSegments = line(obj.Axes, ...
                 nanedXVec, ...
@@ -136,9 +144,25 @@ classdef DraggableKeypoint2DAnimator < Animator
             % colored lines.
             frameX = obj.markersX(obj.frameInds(obj.frame), :);
             frameY = obj.markersY(obj.frameInds(obj.frame), :);
-            obj.points = obj.createDragPointsLine(obj.Axes, frameX, frameY, ...
-                'LineStyle', 'none', 'LineWidth', 1, 'Marker', '.', 'MarkerSize', ...
-                20, 'Color', obj.DragPointColor);
+            % obj.points = obj.createDragPointsLine(obj.Axes, frameX, frameY, ...
+            %     'LineStyle', 'none', 'LineWidth', 1, ...
+            %     'Marker', '.', 'MarkerSize', ...
+            %     20, 'Color', obj.DragPointColor);
+
+            if isempty(obj.markerColors)
+                obj.points = obj.createDragPointsScatter(obj.Axes, frameX, frameY, ...
+                    SizeData=obj.MarkerSize * 2, ...
+                    MarkerFaceColor=[1, 1, 1], ...
+                    MarkerEdgeColor=[1, 1, 1]);
+            else
+                obj.points = obj.createDragPointsScatter(obj.Axes, frameX, frameY, ...
+                    CData=obj.markerColors, ...
+                    SizeData=obj.MarkerSize * 2, ...
+                    MarkerFaceColor='flat', ...
+                    MarkerEdgeColor='flat');
+            end
+
+
             ax = handle(obj.Axes);
             disableDefaultInteractivity(ax)
             ax.Interactions = [zoomInteraction regionZoomInteraction rulerPanInteraction];
@@ -160,14 +184,29 @@ classdef DraggableKeypoint2DAnimator < Animator
             curMarker = [x ; y]';
         end
         
-        function lines = createDragPointsLine(obj, ax, x, y, varargin)
+        function returnLine = createDragPointsLine(obj, ax, x, y, varargin)
             % Create invisible draggable plotting points to act as anchors
             % for multicolor lines.
             % Consider reimplementing with draggable()
-            lines = line(ax, x, y, 'hittest', 'on', 'ButtonDownFcn', ...
-                @obj.handleClickOnLine, 'PickableParts', 'all', 'Visible', obj.visibleDragPoints, ...
+            returnLine = line(ax, x, y, ...,
+                'HitTest', 'on', ...
+                'ButtonDownFcn', @obj.handleClickOnLine, ...
+                'PickableParts', 'all', ...
+                'Visible', obj.visibleDragPoints, ...
                 varargin{:});
-            
+        end
+
+        function returnScatter = createDragPointsScatter(obj, ax, x, y, varargin)
+            % Create invisible draggable plotting points to act as anchors
+            % for multicolor lines.
+            % Consider reimplementing with draggable()
+            % keyboard;
+
+            returnScatter = scatter(ax, x, y, varargin{:}, ...
+                HitTest= 'on', ...
+                ButtonDownFcn=@obj.handleClickOnLine, ...
+                PickableParts='all', ...
+                Visible=obj.visibleDragPoints);
         end
         
         function handleClickOnLine(obj, lineObj, hitEvent)
