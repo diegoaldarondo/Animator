@@ -39,7 +39,7 @@ classdef DraggableKeypoint2DAnimator < Animator
     
     properties (Access = public)
         MarkerSize = 20;
-        DragPointColor = [1 1 1];
+        DragPointColor = [1, 1, 1];
         LineWidth = 3;
         markers % x,y position of markers. SHAPE: (# frames, 2, # markers)
         % NOTE: Why are there seperate x and y position arrays? why not just pull from markers
@@ -184,6 +184,7 @@ classdef DraggableKeypoint2DAnimator < Animator
             curMarker = [x ; y]';
         end
         
+        % Currently unused: maybe remove - replaced by createDragPointsScatter()
         function returnLine = createDragPointsLine(obj, ax, x, y, varargin)
             % Create invisible draggable plotting points to act as anchors
             % for multicolor lines.
@@ -200,10 +201,8 @@ classdef DraggableKeypoint2DAnimator < Animator
             % Create invisible draggable plotting points to act as anchors
             % for multicolor lines.
             % Consider reimplementing with draggable()
-            % keyboard;
-
             returnScatter = scatter(ax, x, y, varargin{:}, ...
-                HitTest= 'on', ...
+                HitTest='on', ...
                 ButtonDownFcn=@obj.handleClickOnLine, ...
                 PickableParts='all', ...
                 Visible=obj.visibleDragPoints);
@@ -356,7 +355,7 @@ classdef DraggableKeypoint2DAnimator < Animator
             % Put into cell for vectorized graphics update
             nanedXVec = cell(size(colors, 1), 1);
             nanedYVec = cell(size(colors, 1), 1);
-            for i = 1:size(colors, 1)
+            for i = 1 : size(colors, 1)
                 nanedXVec{i} = reshape(catnanX(:, cIds == i), [], 1);
                 nanedYVec{i} = reshape(catnanY(:, cIds == i), [], 1);
             end
